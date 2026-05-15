@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="ja"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>桟橋荷役 点検ポータル</title>
+  <style>
+    :root {
+      --blue: #1f67c7;
+      --blue-dark: #0f3e88;
+      --sky: #eaf5ff;
+      --line: #d8e6f3;
+      --text: #22324a;
+      --muted: #64748b;
+      --card: #ffffff;
+      --shadow: 0 14px 40px rgba(31, 103, 199, 0.10);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+      background: linear-gradient(180deg, #f4faff 0%, #eef7ff 100%);
+      color: var(--text);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 700;
+      color: var(--blue-dark);
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--blue-dark);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      background: rgba(255,255,255,0.7);
+    }
+
+    .guide-btn {
+      border: none;
+      background: rgba(31,103,199,0.10);
+      color: var(--blue-dark);
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 470px;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: #d8ecff;
+    }
+
+    .hero img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.80) 28%, rgba(255,255,255,0.18) 58%, rgba(255,255,255,0.00) 78%),
+        linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 56px 44px;
+      width: min(520px, 100%);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1.15;
+      color: var(--blue-dark);
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 22px 0 28px;
+      font-size: 18px;
+      line-height: 1.8;
+      color: #334155;
+    }
+
+    .search-card {
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 16px 36px rgba(15,62,136,0.10);
+      padding: 24px;
+    }
+
+    .search-label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--blue-dark);
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-row input {
+      flex: 1;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid #bfd6ef;
+      padding: 0 16px;
+      font-size: 16px;
+      outline: none;
+      background: #fff;
+    }
+
+    .search-row button {
+      min-width: 70px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #2878df, #1f67c7);
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .search-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      justify-content: center;
+      margin: 34px 0 22px;
+      color: var(--blue-dark);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .section-title::before,
+    .section-title::after {
+      content: "";
+      height: 2px;
+      width: 120px;
+      background: #bdd3ea;
+      border-radius: 999px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #e7eef6;
+      border-radius: 22px;
+      padding: 26px 20px;
+      box-shadow: 0 10px 26px rgba(30, 64, 175, 0.06);
+      transition: transform .2s ease, box-shadow .2s ease;
+      min-height: 255px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 34px rgba(30, 64, 175, 0.11);
+    }
+
+    .icon-wrap {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      font-size: 44px;
+      font-weight: 700;
+    }
+
+    .blue { background: #e9f2ff; color: #2d6fe3; }
+    .green { background: #edf7eb; color: #53a74d; }
+    .orange { background: #fff4df; color: #e8ac22; }
+    .purple { background: #f1ebff; color: #9466ef; }
+    .cyan { background: #e9f7fb; color: #3ca4c4; }
+
+    .card h3 {
+      text-align: center;
+      font-size: 18px;
+      margin: 0 0 10px;
+      color: var(--blue-dark);
+    }
+
+    .card p {
+      text-align: center;
+      margin: 0;
+      color: #475569;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .card .card-link {
+      align-self: flex-end;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      border: 2px solid currentColor;
+      margin-top: 18px;
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 2.1fr 0.9fr;
+      gap: 22px;
+      margin-top: 26px;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #e5edf6;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(15, 62, 136, 0.06);
+    }
+
+    .panel-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid #ebf1f7;
+      font-weight: 800;
+      color: var(--blue-dark);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-body {
+      padding: 20px 22px 28px;
+    }
+
+    .candidate-box {
+      border: 2px dashed #c9d8e8;
+      border-radius: 16px;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8aa0b6;
+      text-align: center;
+      padding: 20px;
+      background: #fcfdff;
+    }
+
+    .favorite {
+      background: linear-gradient(180deg, #1f67c7 0%, #1756ab 100%);
+      color: white;
+    }
+
+    .favorite .panel-header {
+      color: white;
+      border-bottom-color: rgba(255,255,255,0.12);
+    }
+
+    .favorite-card {
+      background: rgba(255,255,255,0.14);
+      border-radius: 16px;
+      min-height: 116px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      color: #e4efff;
+      line-height: 1.8;
+    }
+
+    .notice {
+      margin-top: 22px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid #e0eaf5;
+      border-radius: 18px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      padding: 18px 22px;
+      align-items: center;
+      color: var(--blue-dark);
+    }
+
+    .notice small {
+      color: #475569;
+      font-size: 14px;
+    }
+
+    .notice-right {
+      text-align: right;
+      font-weight: 700;
+      line-height: 1.8;
+    }
+
+    footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+      margin: 18px 0 8px;
+    }
+
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(3, 1fr); }
+      .lower-grid, .notice { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .container { padding: 14px; }
+      .hero { min-height: auto; }
+      .hero-content { width: 100%; padding: 28px 20px; }
+      .hero::after {
+        background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.86) 35%, rgba(255,255,255,0.55) 100%);
+      }
+      .search-row { flex-direction: column; }
+      .cards { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .section-title::before, .section-title::after { width: 50px; }
+    }
+
+    .chatbot-shell {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .chatbot-panel {
+      width: min(360px, calc(100vw - 28px));
+      background: rgba(255,255,255,0.98);
+      border: 1px solid #dce8f4;
+      border-radius: 22px;
+      box-shadow: 0 18px 44px rgba(15, 62, 136, 0.18);
+      overflow: hidden;
+    }
+
+    .chatbot-panel[hidden] {
+      display: none;
+    }
+
+    .chatbot-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, #2878df, #1f67c7);
+      color: #fff;
+    }
+
+    .chatbot-title {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .chatbot-status {
+      display: block;
+      margin-top: 2px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .chatbot-close {
+      border: none;
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .chatbot-body {
+      padding: 18px;
+      background: #f8fbff;
+    }
+
+    .chatbot-message {
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border-radius: 16px 16px 16px 6px;
+      background: #fff;
+      border: 1px solid #e2ebf5;
+      color: #334155;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .chatbot-input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chatbot-input {
+      flex: 1;
+      height: 46px;
+      border: 1px solid #c7d7e8;
+      border-radius: 14px;
+      padding: 0 14px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+    }
+
+    .chatbot-send {
+      border: none;
+      border-radius: 14px;
+      min-width: 64px;
+      padding: 0 16px;
+      background: #1f67c7;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chatbot-note {
+      margin: 10px 0 0;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .chatbot-toggle {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, #2878df, #1f67c7);
+      color: #fff;
+      box-shadow: 0 16px 34px rgba(31, 103, 199, 0.24);
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 760px) {
+      .chatbot-shell {
+        right: 14px;
+        bottom: 14px;
+        left: 14px;
+      }
+
+      .chatbot-panel {
+        width: 100%;
+      }
+
+      .chatbot-toggle {
+        align-self: flex-end;
+      }
+    }
+  </style>
+<style data-pier-portal-generated="true">
+        .candidate-box.has-results {
+          display: grid;
+          align-items: stretch;
+          justify-content: stretch;
+          gap: 10px;
+          border-style: solid;
+          color: #0f172a;
+          text-align: left;
+        }
+        .site-result-button {
+          width: 100%;
+          min-height: 46px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #fff;
+          color: #0f172a;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+          line-height: 1.35;
+          padding: 11px 13px;
+          text-align: left;
+        }
+        .site-result-button:hover,
+        .site-result-button:focus-visible {
+          border-color: #0284c7;
+          box-shadow: 0 0 0 3px rgba(2, 132, 199, .16);
+          outline: none;
+        }
+        .site-result-empty {
+          align-self: center;
+          color: #64748b;
+          margin: 0;
+          text-align: center;
+        }
+      </style><style data-pier-portal-generated="true">
+        .pier-category-modal {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          background: rgba(15, 23, 42, .52);
+          padding: 18px;
+        }
+        .pier-category-modal.is-visible {
+          display: flex;
+        }
+        .pier-category-dialog {
+          width: min(720px, 100%);
+          max-height: min(680px, 88vh);
+          overflow: auto;
+          border-radius: 10px;
+          background: #fff;
+          box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+        }
+        .pier-category-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 16px 18px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .pier-category-title {
+          margin: 0;
+          color: #0f172a;
+          font-size: 20px;
+          line-height: 1.3;
+        }
+        .pier-category-close {
+          min-width: 40px;
+          min-height: 40px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #fff;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+        }
+        .pier-category-list {
+          display: grid;
+          gap: 10px;
+          padding: 16px 18px 18px;
+        }
+        .pier-category-item {
+          width: 100%;
+          min-height: 48px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #0f172a;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+          line-height: 1.35;
+          padding: 12px 14px;
+          text-align: left;
+        }
+        .pier-category-item:hover,
+        .pier-category-item:focus-visible {
+          border-color: #0284c7;
+          box-shadow: 0 0 0 3px rgba(2, 132, 199, .16);
+          outline: none;
+        }
+        .pier-category-empty {
+          margin: 0;
+          color: #64748b;
+          padding: 18px;
+        }
+      </style><style data-pier-portal-generated="true">
+        .brand > div:not(.brand-mark) {
+          white-space: nowrap;
+        }
+        .hero h1 {
+          white-space: nowrap;
+          font-size: clamp(34px, 4vw, 56px);
+        }
+        .hero-content {
+          padding-top: 48px;
+          padding-bottom: 42px;
+        }
+        .search-card {
+          margin-top: 22px;
+        }
+        .lower-grid {
+          grid-template-columns: 1fr;
+          margin-top: 24px;
+        }
+        .lower-grid .panel {
+          width: 100%;
+        }
+        .cards {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 14px;
+          margin-top: 22px;
+        }
+        .card {
+          min-height: 210px;
+          padding: 20px 16px;
+          border-radius: 18px;
+        }
+        .icon-wrap {
+          width: 78px;
+          height: 78px;
+          margin-bottom: 14px;
+          font-size: 34px;
+        }
+        .card h3 {
+          font-size: 16px;
+          line-height: 1.4;
+        }
+        .card p {
+          font-size: 13px;
+          line-height: 1.6;
+        }
+        .card .card-link {
+          width: 32px;
+          height: 32px;
+          font-size: 17px;
+          margin-top: 14px;
+        }
+        @media (max-width: 1100px) {
+          .cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 640px) {
+          .brand > div:not(.brand-mark),
+          .hero h1 {
+            white-space: normal;
+          }
+          .cards {
+            grid-template-columns: 1fr;
+          }
+        }
+      </style><style data-pier-portal-generated="true">
+        .notice {
+          grid-template-columns: 1fr;
+        }
+        .notice-list {
+          display: grid;
+          gap: 10px;
+          margin-top: 12px;
+        }
+        .notice-item {
+          display: grid;
+          grid-template-columns: 110px 1fr;
+          gap: 12px;
+          align-items: start;
+          color: #334155;
+          line-height: 1.6;
+        }
+        .notice-date {
+          color: #1f67c7;
+          font-weight: 800;
+        }
+        .notice-text {
+          overflow-wrap: anywhere;
+        }
+        @media (max-width: 640px) {
+          .notice-item {
+            grid-template-columns: 1fr;
+            gap: 2px;
+          }
+        }
+      </style><style data-pier-guide-generated="true">
+        .pier-guide-modal {
+          position: fixed;
+          inset: 0;
+          z-index: 10000;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          background: rgba(15, 23, 42, .52);
+          padding: 18px;
+        }
+        .pier-guide-modal.is-visible {
+          display: flex;
+        }
+        .pier-guide-dialog {
+          width: min(560px, 100%);
+          border-radius: 12px;
+          background: #fff;
+          box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+          color: #0f172a;
+          overflow: hidden;
+        }
+        .pier-guide-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 16px 18px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .pier-guide-head h2 {
+          margin: 0;
+          font-size: 20px;
+        }
+        .pier-guide-close {
+          min-width: 40px;
+          min-height: 40px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #fff;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+        }
+        .pier-guide-body {
+          padding: 18px 22px 22px;
+        }
+        .pier-guide-body ol {
+          margin: 0;
+          padding-left: 1.4em;
+        }
+        .pier-guide-body li {
+          margin: 0 0 10px;
+          line-height: 1.7;
+        }
+      </style></head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">⚓</div>
+        <div>桟橋荷役作業 点検ポータル</div>
+      </div>
+      <button class="guide-btn" type="button">使い方ガイド</button>
+    </div>
+
+    <section class="hero">
+      <img src="assets/hero.webp" alt="Pier portal hero image" decoding="async" fetchpriority="high">
+      <div class="hero-content">
+        <h1>各種点検表一覧</h1>
+        
+
+        <div class="search-card">
+          <label class="search-label" for="siteName">担当現場名を入力してください</label>
+          <div class="search-row">
+            <input id="siteName" type="text" placeholder="例）○○桟橋、△△基地、□□岸壁 など" autocomplete="off">
+            <button type="button">⌕</button>
+          </div>
+          
+        </div>
+      </div>
+    </section><div class="panel" data-pier-portal-moved="true">
+        <div class="panel-header">🔎 現場名から探す（候補一覧）</div>
+        <div class="panel-body">
+          
+          <div class="candidate-box">
+            <div>
+              <div style="font-size:44px;margin-bottom:10px;">📋</div>
+              現場名を入力して検索してください
+            </div>
+          </div>
+        </div>
+      </div><section class="cards" data-pier-portal-moved="true">
+      <a class="card" href="#" data-link-slot="card-1" data-pier-category-slot="card-1" data-pier-category-title="受入・荷役関連" aria-label="受入・荷役関連 の書類一覧を開く">
+        <div>
+          <div class="icon-wrap blue">📝</div>
+          <h3>受入・荷役関連</h3>
+          <p>船舶受入から荷役作業に関する点検表はこちら</p>
+        </div>
+        <span class="card-link blue">→</span>
+      </a>
+
+      <a class="card" href="#" data-link-slot="card-2" data-pier-category-slot="card-2" data-pier-category-title="安全・作業管理" aria-label="安全・作業管理 の書類一覧を開く">
+        <div>
+          <div class="icon-wrap green">⛑</div>
+          <h3>安全・作業管理</h3>
+          <p>作業前点検や安全確認に関する点検表はこちら</p>
+        </div>
+        <span class="card-link green">→</span>
+      </a>
+
+      <a class="card" href="#" data-link-slot="card-3" data-pier-category-slot="card-3" data-pier-category-title="バース計画" aria-label="バース計画 の書類一覧を開く">
+        <div>
+          <div class="icon-wrap orange">⚙</div>
+          <h3>バース計画</h3>
+          <p>桟橋設備や機器の点検に関する点検表はこちら</p>
+        </div>
+        <span class="card-link orange">→</span>
+      </a>
+
+      <a class="card" href="#" data-link-slot="card-4" data-pier-category-slot="card-4" data-pier-category-title="その他書類" aria-label="その他書類 の書類一覧を開く">
+        <div>
+          <div class="icon-wrap purple">✔</div>
+          <h3>その他書類</h3>
+          <p>環境保全や保安に関する点検表はこちら</p>
+        </div>
+        <span class="card-link purple">→</span>
+      </a>
+
+      <a class="card" href="#" data-link-slot="card-5" data-pier-category-slot="card-5" data-pier-category-title="主務職" aria-label="主務職 の書類一覧を開く">
+        <div>
+          <div class="icon-wrap cyan">📄</div>
+          <h3>主務職</h3>
+          <p>その他の点検表・記録表はこちら</p>
+        </div>
+        <span class="card-link cyan">→</span>
+      </a>
+    </section>
+
+    
+
+    
+
+    <section class="lower-grid">
+      
+
+      
+    </section>
+
+    <section class="notice">
+      <div><strong>お知らせ</strong><div class="notice-list"><small>現在のお知らせはありません。</small></div></div>
+      
+    </section>
+
+    <footer>© 2026 桟橋荷役作業 点検ポータル</footer>
+  </div>
+
+  
+
+  
+
+
+<script data-pier-contact-generated="true">
+        (() => {
+          const CONTACT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzviBMBYWwZ_-7LBt2u732e3o2vgjgxZpfVjVfq1ZZ33Q9zsige9DClU1i7_zGdFx_4/exec";
+          const STORAGE_KEY = "pierPortalContactRequests";
+
+          const guideButton = document.querySelector(".guide-btn");
+          if (!guideButton || document.querySelector(".contact-btn")) return;
+
+          const style = document.createElement("style");
+          style.textContent = `
+            .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+            .contact-btn, .patch-notes-btn { border: none; border-radius: 999px; padding: 14px 20px; font: inherit; font-weight: 700; cursor: pointer; box-shadow: 0 10px 22px rgba(31,103,199,0.18); }
+            .contact-btn { background: var(--blue); color: #fff; }
+            .patch-notes-btn { background: #eaf5ff; color: var(--blue-dark); border: 1px solid #bfd6ef; box-shadow: none; }
+            .pier-contact-modal { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; background: rgba(15,23,42,.52); padding: 18px; }
+            .pier-contact-modal.is-visible { display: flex; }
+            .pier-contact-dialog { width: min(620px, 100%); border-radius: 12px; background: #fff; box-shadow: 0 24px 70px rgba(15,23,42,.28); color: #0f172a; overflow: hidden; }
+            .pier-contact-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid #e2e8f0; }
+            .pier-contact-head h2 { margin: 0; font-size: 20px; }
+            .pier-contact-close { min-width: 40px; min-height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; cursor: pointer; font: inherit; font-weight: 700; }
+            .pier-contact-body { padding: 18px 22px 22px; }
+            .patch-note-list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+            .patch-note-list li { display: grid; gap: 4px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+            .patch-note-date { color: #1f67c7; font-weight: 800; font-size: 13px; }
+            .patch-note-title { font-weight: 800; color: #0f172a; }
+            .patch-note-detail { color: #475569; font-size: 14px; line-height: 1.7; }
+            .pier-contact-form { display: grid; gap: 14px; }
+            .pier-contact-field { display: grid; gap: 6px; font-weight: 700; }
+            .pier-contact-field input, .pier-contact-field select, .pier-contact-field textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 13px; font: inherit; color: #0f172a; background: #fff; }
+            .pier-contact-field textarea { min-height: 150px; resize: vertical; }
+            .pier-contact-note, .pier-contact-status { margin: 0; color: #475569; font-size: 13px; line-height: 1.6; }
+            .pier-contact-actions { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+            .pier-contact-submit, .pier-contact-export { border: none; border-radius: 10px; padding: 12px 16px; font: inherit; font-weight: 800; cursor: pointer; }
+            .pier-contact-submit { background: var(--blue); color: #fff; }
+            .pier-contact-export { background: #e2e8f0; color: #0f172a; }
+            .pier-contact-status.is-success { color: #047857; font-weight: 700; }
+            .pier-contact-status.is-error { color: #b91c1c; font-weight: 700; }
+            @media (max-width: 720px) { .topbar { align-items: flex-start; flex-direction: column; gap: 14px; } .topbar-actions { width: 100%; justify-content: flex-start; } .contact-btn, .patch-notes-btn { padding: 12px 16px; } }
+          `;
+          document.head.appendChild(style);
+
+          const actionWrap = document.createElement("div");
+          actionWrap.className = "topbar-actions";
+          guideButton.parentNode.insertBefore(actionWrap, guideButton);
+          actionWrap.appendChild(guideButton);
+
+          const patchButton = document.createElement("button");
+          patchButton.className = "patch-notes-btn";
+          patchButton.type = "button";
+          patchButton.textContent = "パッチノート";
+          actionWrap.appendChild(patchButton);
+
+          const contactButton = document.createElement("button");
+          contactButton.className = "contact-btn";
+          contactButton.type = "button";
+          contactButton.textContent = "お問い合わせ";
+          actionWrap.appendChild(contactButton);
+
+          const modal = document.createElement("div");
+          modal.className = "pier-contact-modal";
+          modal.innerHTML = '<div class="pier-contact-dialog" role="dialog" aria-modal="true" aria-labelledby="pierContactTitle"><div class="pier-contact-head"><h2 id="pierContactTitle">お問い合わせ</h2><button type="button" class="pier-contact-close" aria-label="close">x</button></div><div class="pier-contact-body"><form class="pier-contact-form"><label class="pier-contact-field">お名前<input name="name" autocomplete="name" placeholder="例：山田 太郎"></label><label class="pier-contact-field">所属・部署<input name="department" autocomplete="organization" placeholder="例：現業課"></label><label class="pier-contact-field">種別<select name="type"><option value="意見">意見</option><option value="要望">要望</option><option value="不具合">不具合</option><option value="その他">その他</option></select></label><label class="pier-contact-field">内容<textarea name="message" required placeholder="気づいた点、改善してほしい点などを入力してください。"></textarea></label><p class="pier-contact-note">送信内容は管理用スプレッドシートに集計されます。</p><div class="pier-contact-actions"><button type="button" class="pier-contact-export">CSV出力</button><button type="submit" class="pier-contact-submit">送信</button></div><p class="pier-contact-status" aria-live="polite"></p></form></div></div>';
+          document.body.appendChild(modal);
+
+          const patchModal = document.createElement("div");
+          patchModal.className = "pier-contact-modal";
+          patchModal.innerHTML = '<div class="pier-contact-dialog" role="dialog" aria-modal="true" aria-labelledby="pierPatchTitle"><div class="pier-contact-head"><h2 id="pierPatchTitle">パッチノート</h2><button type="button" class="pier-contact-close patch-notes-close" aria-label="close">x</button></div><div class="pier-contact-body"><ul class="patch-note-list"><li><span class="patch-note-date">2026-05-14</span><span class="patch-note-title">変更内容履歴を追加</span><span class="patch-note-detail">上部メニューにパッチノートを追加し、ページの更新内容を確認できるようにしました。</span></li><li><span class="patch-note-date">2026-05-14</span><span class="patch-note-title">カード内リンクを分類表示</span><span class="patch-note-detail">受入・荷役関連、安全・作業管理のカードを開いたあと、書類種別を選んで関連リンクを確認できる構成にしました。</span></li><li><span class="patch-note-date">2026-05-14</span><span class="patch-note-title">リンク設定ツールを更新</span><span class="patch-note-detail">公開HTMLを読み込んだとき、カード内の分類と書類割り当てを復元しやすくしました。</span></li></ul></div></div>';
+          document.body.appendChild(patchModal);
+
+          const form = modal.querySelector(".pier-contact-form");
+          const closeButton = modal.querySelector(".pier-contact-close");
+          const patchCloseButton = patchModal.querySelector(".patch-notes-close");
+          const exportButton = modal.querySelector(".pier-contact-export");
+          const status = modal.querySelector(".pier-contact-status");
+          const setStatus = (message, type = "") => {
+            status.textContent = message;
+            status.className = "pier-contact-status" + (type ? " is-" + type : "");
+          };
+          const getStoredRows = () => {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+            catch (_) { return []; }
+          };
+          const storeRow = (row) => {
+            const rows = getStoredRows();
+            rows.push(row);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+          };
+          const toCsvValue = (value) => '"' + String(value || "").replace(/"/g, '""') + '"';
+          const exportCsv = () => {
+            const rows = getStoredRows();
+            if (!rows.length) {
+              setStatus("出力できるお問い合わせはまだありません。", "error");
+              return;
+            }
+            const headers = ["日時", "お名前", "所属・部署", "種別", "内容", "ページURL"];
+            const csvRows = rows.map((row) => [row.createdAt, row.name, row.department, row.type, row.message, row.pageUrl].map(toCsvValue).join(","));
+            const blob = new Blob(["\ufeff" + headers.map(toCsvValue).join(",") + "\n" + csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "pier-portal-contact-requests.csv";
+            link.click();
+            URL.revokeObjectURL(url);
+            setStatus("CSVを出力しました。", "success");
+          };
+
+          const open = () => {
+            modal.classList.add("is-visible");
+            setStatus("");
+            form.elements.message.focus();
+          };
+          const close = () => modal.classList.remove("is-visible");
+          const openPatchNotes = () => {
+            patchModal.classList.add("is-visible");
+            patchCloseButton.focus();
+          };
+          const closePatchNotes = () => patchModal.classList.remove("is-visible");
+
+          patchButton.addEventListener("click", openPatchNotes);
+          patchCloseButton.addEventListener("click", closePatchNotes);
+          patchModal.addEventListener("click", (event) => { if (event.target === patchModal) closePatchNotes(); });
+          contactButton.addEventListener("click", open);
+          closeButton.addEventListener("click", close);
+          modal.addEventListener("click", (event) => { if (event.target === modal) close(); });
+          document.addEventListener("keydown", (event) => { if (event.key === "Escape") { close(); closePatchNotes(); } });
+          exportButton.addEventListener("click", exportCsv);
+          form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const formData = new FormData(form);
+            const row = {
+              createdAt: new Date().toLocaleString("ja-JP"),
+              name: formData.get("name"),
+              department: formData.get("department"),
+              type: formData.get("type"),
+              message: formData.get("message"),
+              pageUrl: location.href
+            };
+            if (!String(row.message || "").trim()) {
+              setStatus("内容を入力してください。", "error");
+              return;
+            }
+            storeRow(row);
+            try {
+              await fetch(CONTACT_ENDPOINT, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+                body: new URLSearchParams(row)
+              });
+              setStatus("送信しました。ご意見ありがとうございます。", "success");
+              form.reset();
+            } catch (_) {
+              setStatus("通信できなかったため、この端末に保存しました。CSV出力で確認できます。", "error");
+            }
+          });
+        })();
+      </script>
+<script data-pier-portal-generated="true">
+        (() => {
+          const sheets = [{"name":"4バース　内航受入","url":"https://docs.google.com/spreadsheets/d/18cOPowF1L658c2eWSKpHwFBIenaygqxXFyr2wL-0_iY/edit?gid=177580134#gid=177580134"},{"name":"5バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1It6tzea6LkAFXXDenqdOEvYSlN2XCr8Nq2rNrPf5ZoA/edit"},{"name":"6バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1xWQDx4uJ4Lr__IdJwKqg4wDM9pFpLAsKztmWCwWc-TU/edit?gid=177580134#gid=177580134"},{"name":"7バース　内航受入","url":"https://docs.google.com/spreadsheets/d/10q9wfykUh74oORKFt3hU2781BLsobyjvOY-bR2jzkuU/edit?gid=177580134#gid=177580134"},{"name":"8バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1I2DD7L_kI04znCSq7u0yKz-T0R4CO4nXLgKRjd4fgJM/edit"},{"name":"11バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1pqxpPNmZXmiJHrRp4ZRi6n5V_30m8lCz28Dxr0xumWA/edit?gid=177580134#gid=177580134"},{"name":"12バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1I6OhX28ou5cLf7GKXdSP-c910TCvHPEymvdMAsdnijA/edit?gid=177580134#gid=177580134"},{"name":"16バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1bzsF_DVlPiB4fS9B0xg2bwSZD2q4cZFKijH_YBZl-14/edit?gid=177580134#gid=177580134"},{"name":"17バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1aRsUo9D1zpQURjl70WmoC29SRuim9zWzqBgavkAyVJs/edit?gid=177580134#gid=177580134"},{"name":"18バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1Nv8dozPMMje0jylWlXhu3IEccgmrNPTCaqZsy3Awn9k/edit?gid=177580134#gid=177580134"},{"name":"4バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1cwWeZwHG_iu0WE_oL2rBzT8aNzy9N-riw9nxuLhWkss/edit?gid=1482500735#gid=1482500735"},{"name":"5バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1udCiru7bVD2vQf2fQdS70AYGfNYBWiBNOvjga4ZfaoM/edit?gid=1482500735#gid=1482500735"},{"name":"6バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1p4mY4Tdq4mMcUbnNddHiwLnGRf5qvhQ3fqvnHaBu_Zk/edit"},{"name":"7バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1x_baZnJD2j9OyWRMofwstuoCclWY1svolzTV_LmP8hs/edit?gid=1482500735#gid=1482500735"},{"name":"8バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1zTjetHjqyh39ZPvcKdlDfCvq72hVFAb0ZRGzZYXY5b8/edit?gid=1482500735#gid=1482500735"},{"name":"11バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1Tbu_dCX_1wtVX1OGqNuhrXJBWlZ36xDBc9wQriIbLMg/edit?gid=1482500735#gid=1482500735"},{"name":"12バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1Q5tDw-4Y1B60sGdl-9MZCmo5O97GDCJ9j5xdq4bCisA/edit?gid=1482500735#gid=1482500735"},{"name":"15バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1L9hudscI9M5hzCbSD9tWu16vlrbv36vTpXuY0E12_YM/edit?gid=1482500735#gid=1482500735"},{"name":"16バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/150rIwcAaAEOYdhs6N8Wra1h9ZK1OPYXBmTF2Rjaw8Uc/edit?gid=1482500735#gid=1482500735"},{"name":"17バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1M_K3mAime8ktwO2-aMi2JT8jfg52mhs63ypBW38SVIY/edit"},{"name":"18バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1NGG6w4UWrW7yhW6jC87tTKtDdenQPD9nOaITGDS3dcA/edit?gid=1482500735#gid=1482500735"},{"name":"19バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1OWPw5EJNDEU94gVzdLNOs1vnhDk4AOZWnrBNbXFn8UY/edit?gid=1482500735#gid=1482500735"},{"name":"主務職　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1tSSowjyrvl8J4o1BwLvHHPUisrOrOiqDAyl9DxHHN64/edit?gid=1482500735#gid=1482500735"},{"name":"給水記録","url":"https://docs.google.com/spreadsheets/d/15sLRMzEu6ukpBSvulU6yBmroVZQXbMw7wcyEB9ROBoQ/edit?gid=1923275255#gid=1923275255"},{"name":"桟橋記録","url":"https://docs.google.com/spreadsheets/d/1R2iWMFmljTW6VoSrAu5LI78DSPoDh3u6KFzXsjCstKQ/edit?gid=653762034#gid=653762034"},{"name":"初入港","url":"https://docs.google.com/spreadsheets/d/1hUE6qYf7GNjx0ImDQacYBwelLpjbafGgbgC-fREpqVg/edit?gid=1573289378#gid=1573289378"},{"name":"主務職　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1fAcuvVzv0cEP9kG0a1tJT7Ss69msJJm0h5S-Tmf5dLY/edit?gid=1480046506#gid=1480046506"},{"name":"4バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1iAZkq-ISAzCe3csMdOrV1aR7sCh15d04KRqVF5KVc7g/edit?gid=1480046506#gid=1480046506"},{"name":"5バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1Bd-hMmL9GTEUaVJIUc2u0ehyUtvjbsHDbH9Phhhdo74/edit"},{"name":"7バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1K3VgIrnmHiqjpFSfz-yc2IoxHBfPpJp2sMXqnrAin60/edit?gid=1480046506#gid=1480046506"},{"name":"8バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1Nygyk8hi2XgjBcVel1XlNjqhERUABhEaN-tUTYyHks0/edit?gid=1480046506#gid=1480046506"},{"name":"11バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1NDA4tFz1ilxwSAflCuSRY5UVWRfIRCHPhi3S7LfApzU/edit?gid=1480046506#gid=1480046506"},{"name":"主務職　初入港","url":"https://docs.google.com/spreadsheets/d/1TdidNPc_gIkuRrVZl9Tb94x3ZveL2zLGFAa68TBKtnk/edit?gid=1573289378#gid=1573289378"},{"name":"案件ID","url":"https://docs.google.com/spreadsheets/d/1oHuKQ-GK6_quWuyjKEI4w4qa-4WzDJQRJQrCyU0MpLc/edit?gid=1724890318#gid=1724890318"},{"name":"現業課メニュー","url":"https://docs.google.com/spreadsheets/d/1tc2lPO-uLuxNTVBmQsC-LLH90SrgpMAJXwgPbJ4GJZo/edit?gid=1724890318#gid=1724890318"},{"name":"スカッパー点検表","url":"https://docs.google.com/spreadsheets/d/1gBUq2SJ-mmT-D7eumyYM9bqPXNBA9tz-aJRtVcFxBxQ/edit?gid=1621944634#gid=1621944634"},{"name":"主務職　スカッパー点検表","url":"https://docs.google.com/spreadsheets/d/19u-THn9FHOfA-yWirWbMXft3gzmLMLyx23QAfCeUKds/edit?gid=388077648#gid=388077648"},{"name":"4バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1h2KEKi7qFrw2tpXC5WtC_pkqOiN5m3n2dIOVN8vVUvA/edit?gid=1599872168#gid=1599872168"},{"name":"5バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1yTzrZUy0AqKVxvwdBEPnz_CHdGxV8RsYmfaE2JCSUR4/edit"},{"name":"6バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1FcBs6kumYcSWId6c6dnG3CfpvV0ByHmw8GHu8-nRAss/edit?gid=1599872168#gid=1599872168"},{"name":"7バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/15MTuBB4xjXGvcdTTDYNBH9Y-JITbBp9rKvsS7DOiW_I/edit?gid=1599872168#gid=1599872168"},{"name":"8バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1e8AsKv7HAqrGTuzGZfBgVr28ni_vhUxPyyKuxHUpO80/edit?gid=1599872168#gid=1599872168"},{"name":"11バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/175Jxu2s5tJzf_f73hrw4wOLgbrVJ9gX-VeWxN0h80Co/edit?gid=1599872168#gid=1599872168"},{"name":"12バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Dce8l3SzRfULmjthHv5wtPKIRjdlQYx9wT7UKG4qy0g/edit?gid=1599872168#gid=1599872168"},{"name":"14バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Ci3GTe0iNvr6AIAMOdWtWhBILD5aCPjlDIXnshx0kZI/edit?gid=1599872168#gid=1599872168"},{"name":"15バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1JFTctHjGtFiQEBt3c2dGkvfNh9BFJ4PZA7fwgS_if9o/edit?gid=1599872168#gid=1599872168"},{"name":"16バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1V68NlgR36UeR6iuLDD4MLJLIR7V9aCuNhQY9T6oqBGQ/edit"},{"name":"17バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Un4ipDByuFjlDGpwF-3Yh-hjgAdZRt6Ql_qZPIW-PXk/edit?gid=1599872168#gid=1599872168"},{"name":"18バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/13_0x4ADnL0Ht-4HQUych1YhkV1a5dq6JVoVk4mn_sec/edit?gid=1599872168#gid=1599872168"},{"name":"19バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Bv3lfk3D19OYutSO4ERKJNAlxccjrMwyhUFR_hS961E/edit?gid=1599872168#gid=1599872168"},{"name":"4バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1UzxXMhgNN9XV8pKYAyT-rL5UVU1JfIcNXSJeIP_T1yM/edit?gid=1717293931#gid=1717293931"},{"name":"5バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1sfH3MO73zvMdhhMazJMJeZ66px6zeeygzBCgw-CUyMY/edit"},{"name":"6バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1KkeERhAzOsHCFPkU5RxUkReEQwwMTWpjleLOWF8pUH0/edit?gid=1717293931#gid=1717293931"},{"name":"7バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1bJsk__--fxcjAfHdsnoDlfCp8WFvzb439jePhcfSnsM/edit?gid=1717293931#gid=1717293931"},{"name":"8バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1aB7VAOGhkBT_g-_dG3n97QE6BLwQcJzbQGZPn1VyOno/edit?gid=1717293931#gid=1717293931"},{"name":"11バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1ErB2dGToo9rQ25jWvxvFdZVInTNBHM4wF87uWgNBf9U/edit"},{"name":"12バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1_B4OzlDXMpmrh6R_2SoyYdFyGs14CKJkP2bzAu5gVlg/edit?usp=drive_web&ouid=117858275856705098440"},{"name":"14バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1sZSHMhZyJjMdXalVapQ5vIyT79MwFraFHYN9Wx4Rt8M/edit?gid=1717293931#gid=1717293931"},{"name":"15バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1BCyxMeUqADbjyUF-hXnORQK8kJHT4ddW8qctu00scXU/edit?gid=1717293931#gid=1717293931"},{"name":"16バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1swIAnghuTJVhNo6hwvOYnkryD3rwXMqfnXbRYGkdYJU/edit?gid=1717293931#gid=1717293931"},{"name":"17バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1G2zD-Pm3kk1OlEpPUgT4AcFepn5nhsfXL624B3RLWMk/edit?gid=1717293931#gid=1717293931"},{"name":"18バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1uvWp3zUqogRVT7zxwzFoFxNbraSoIsdhbcMjQMrJwIA/edit?gid=1717293931#gid=1717293931"},{"name":"19バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1bCMzVo00yoTseYEsXOGPibhl2V3ag7hwR2p0W2susg8/edit?gid=1717293931#gid=1717293931"},{"name":"主務職　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1HFxMAvIMhb7lJ8sn758_0HNUGHU-FbzLmc0sOT51Gxs/edit?gid=1717293931#gid=1717293931"},{"name":"バース計画","url":"https://zoom.us/wb/doc/Ud6p6oGrSECeJDCQzxYfog/p/115030879502336"},{"name":"バース計画(beta)","url":"https://miro.com/welcomeonboard/SEJndTA4ZlBGNjFJVXFtTEJpL0FxaUVxUWxzYlVkUFdFUWJ6eU4wWUR1VnN4OGo5MlRMMVUxVGRCaisyVWc4SHhVemlPSlZjU2xLSHFQazlmcGdmVndwa0ZNOE9BMWluY1JPazFmM3dEUS9MY0hNRjFPc2ZMQkZlVXBvWDNUb3FnbHpza3F6REdEcmNpNEFOMmJXWXBBPT0hdjE=?share_link_id=253818057412"}];
+          const input = document.getElementById("siteName");
+          const resultBox = document.querySelector(".candidate-box");
+          if (!input || !sheets.length) return;
+
+          let lastOpened = "";
+
+          const normalize = (value) => String(value || "").trim().toLowerCase();
+          const openSheet = (item) => {
+            if (!item || !item.url || lastOpened === item.url) return;
+            lastOpened = item.url;
+            window.open(item.url, "_blank", "noopener,noreferrer");
+            window.setTimeout(() => {
+              lastOpened = "";
+            }, 1200);
+          };
+
+          const findExact = () => {
+            const key = normalize(input.value);
+            return sheets.find((item) => normalize(item.name) === key);
+          };
+
+          const getLeadingNumber = (value) => {
+            const match = String(value || "").trim().match(/^\d+/);
+            return match ? match[0] : "";
+          };
+
+          const getMatches = (key) => {
+            const isNumeric = /^\d+$/.test(key);
+            const seen = new Set();
+            return sheets.filter((item) => {
+              const name = normalize(item.name);
+              const matched = isNumeric
+                ? getLeadingNumber(item.name) === key
+                : name.includes(key);
+              if (!matched) return false;
+
+              const uniqueKey = normalize(item.url || item.name);
+              if (seen.has(uniqueKey)) return false;
+              seen.add(uniqueKey);
+              return true;
+            }).slice(0, 12);
+          };
+
+          const renderResultBox = (matches, key) => {
+            if (!resultBox) return;
+            resultBox.innerHTML = "";
+
+            if (!key) {
+              resultBox.classList.remove("has-results");
+              resultBox.innerHTML = '<div><div style="font-size:44px;margin-bottom:10px;">🔎</div>現場名を入力して検索してください</div>';
+              return;
+            }
+
+            resultBox.classList.add("has-results");
+            if (!matches.length) {
+              const empty = document.createElement("p");
+              empty.className = "site-result-empty";
+              empty.textContent = "一致する現場がありません。";
+              resultBox.appendChild(empty);
+              return;
+            }
+
+            matches.slice(0, 12).forEach((item) => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "site-result-button";
+              button.textContent = item.name;
+              button.addEventListener("click", () => {
+                input.value = item.name;
+                openSheet(item);
+              });
+              resultBox.appendChild(button);
+            });
+          };
+
+          const render = () => {
+            const key = normalize(input.value);
+            if (!key) {
+              renderResultBox([], key);
+              return;
+            }
+
+            const matches = getMatches(key);
+
+            renderResultBox(matches, key);
+          };
+
+          input.addEventListener("input", render);
+          input.addEventListener("change", () => openSheet(findExact()));
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              const exact = findExact();
+              if (exact) {
+                event.preventDefault();
+                openSheet(exact);
+              }
+            }
+          });
+        })();
+      </script><script data-pier-portal-generated="true">
+        (() => {
+          const categories = [{"slotId":"card-1","title":"受入・荷役関連","useFolders":true,"folders":[{"id":"inbound-docs","name":"内航受入"},{"id":"cargo-work-checklist","name":"荷役作業安全チェックリスト"}],"items":[{"name":"4バース　内航受入","url":"https://docs.google.com/spreadsheets/d/18cOPowF1L658c2eWSKpHwFBIenaygqxXFyr2wL-0_iY/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"5バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1It6tzea6LkAFXXDenqdOEvYSlN2XCr8Nq2rNrPf5ZoA/edit","folderId":"inbound-docs"},{"name":"6バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1xWQDx4uJ4Lr__IdJwKqg4wDM9pFpLAsKztmWCwWc-TU/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"7バース　内航受入","url":"https://docs.google.com/spreadsheets/d/10q9wfykUh74oORKFt3hU2781BLsobyjvOY-bR2jzkuU/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"8バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1I2DD7L_kI04znCSq7u0yKz-T0R4CO4nXLgKRjd4fgJM/edit","folderId":"inbound-docs"},{"name":"11バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1pqxpPNmZXmiJHrRp4ZRi6n5V_30m8lCz28Dxr0xumWA/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"12バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1I6OhX28ou5cLf7GKXdSP-c910TCvHPEymvdMAsdnijA/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"16バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1bzsF_DVlPiB4fS9B0xg2bwSZD2q4cZFKijH_YBZl-14/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"17バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1aRsUo9D1zpQURjl70WmoC29SRuim9zWzqBgavkAyVJs/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"18バース　内航受入","url":"https://docs.google.com/spreadsheets/d/1Nv8dozPMMje0jylWlXhu3IEccgmrNPTCaqZsy3Awn9k/edit?gid=177580134#gid=177580134","folderId":"inbound-docs"},{"name":"4バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1UzxXMhgNN9XV8pKYAyT-rL5UVU1JfIcNXSJeIP_T1yM/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"5バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1sfH3MO73zvMdhhMazJMJeZ66px6zeeygzBCgw-CUyMY/edit","folderId":"cargo-work-checklist"},{"name":"6バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1KkeERhAzOsHCFPkU5RxUkReEQwwMTWpjleLOWF8pUH0/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"7バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1bJsk__--fxcjAfHdsnoDlfCp8WFvzb439jePhcfSnsM/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"8バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1aB7VAOGhkBT_g-_dG3n97QE6BLwQcJzbQGZPn1VyOno/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"11バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1ErB2dGToo9rQ25jWvxvFdZVInTNBHM4wF87uWgNBf9U/edit","folderId":"cargo-work-checklist"},{"name":"12バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1_B4OzlDXMpmrh6R_2SoyYdFyGs14CKJkP2bzAu5gVlg/edit?usp=drive_web&ouid=117858275856705098440","folderId":"cargo-work-checklist"},{"name":"14バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1sZSHMhZyJjMdXalVapQ5vIyT79MwFraFHYN9Wx4Rt8M/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"15バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1BCyxMeUqADbjyUF-hXnORQK8kJHT4ddW8qctu00scXU/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"16バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1swIAnghuTJVhNo6hwvOYnkryD3rwXMqfnXbRYGkdYJU/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"17バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1G2zD-Pm3kk1OlEpPUgT4AcFepn5nhsfXL624B3RLWMk/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"18バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1uvWp3zUqogRVT7zxwzFoFxNbraSoIsdhbcMjQMrJwIA/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"},{"name":"19バース　荷役作業安全チェックリスト","url":"https://docs.google.com/spreadsheets/d/1bCMzVo00yoTseYEsXOGPibhl2V3ag7hwR2p0W2susg8/edit?gid=1717293931#gid=1717293931","folderId":"cargo-work-checklist"}]},{"slotId":"card-2","title":"安全・作業管理","useFolders":true,"folders":[{"id":"sample-collection","name":"サンプル採取"},{"id":"two-oil-types","name":"2油種同時積み"},{"id":"ship-cargo-safety","name":"船舶荷役安全確認表"}],"items":[{"name":"4バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1cwWeZwHG_iu0WE_oL2rBzT8aNzy9N-riw9nxuLhWkss/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"5バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1udCiru7bVD2vQf2fQdS70AYGfNYBWiBNOvjga4ZfaoM/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"6バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1p4mY4Tdq4mMcUbnNddHiwLnGRf5qvhQ3fqvnHaBu_Zk/edit","folderId":"sample-collection"},{"name":"7バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1x_baZnJD2j9OyWRMofwstuoCclWY1svolzTV_LmP8hs/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"8バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1zTjetHjqyh39ZPvcKdlDfCvq72hVFAb0ZRGzZYXY5b8/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"11バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1Tbu_dCX_1wtVX1OGqNuhrXJBWlZ36xDBc9wQriIbLMg/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"12バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1Q5tDw-4Y1B60sGdl-9MZCmo5O97GDCJ9j5xdq4bCisA/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"15バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1L9hudscI9M5hzCbSD9tWu16vlrbv36vTpXuY0E12_YM/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"16バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/150rIwcAaAEOYdhs6N8Wra1h9ZK1OPYXBmTF2Rjaw8Uc/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"17バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1M_K3mAime8ktwO2-aMi2JT8jfg52mhs63ypBW38SVIY/edit","folderId":"sample-collection"},{"name":"18バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1NGG6w4UWrW7yhW6jC87tTKtDdenQPD9nOaITGDS3dcA/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"19バース　サンプル採取","url":"https://docs.google.com/spreadsheets/d/1OWPw5EJNDEU94gVzdLNOs1vnhDk4AOZWnrBNbXFn8UY/edit?gid=1482500735#gid=1482500735","folderId":"sample-collection"},{"name":"4バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1iAZkq-ISAzCe3csMdOrV1aR7sCh15d04KRqVF5KVc7g/edit?gid=1480046506#gid=1480046506","folderId":"two-oil-types"},{"name":"5バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1Bd-hMmL9GTEUaVJIUc2u0ehyUtvjbsHDbH9Phhhdo74/edit","folderId":"two-oil-types"},{"name":"7バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1K3VgIrnmHiqjpFSfz-yc2IoxHBfPpJp2sMXqnrAin60/edit?gid=1480046506#gid=1480046506","folderId":"two-oil-types"},{"name":"8バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1Nygyk8hi2XgjBcVel1XlNjqhERUABhEaN-tUTYyHks0/edit?gid=1480046506#gid=1480046506","folderId":"two-oil-types"},{"name":"11バース　2油種同時積み","url":"https://docs.google.com/spreadsheets/d/1NDA4tFz1ilxwSAflCuSRY5UVWRfIRCHPhi3S7LfApzU/edit?gid=1480046506#gid=1480046506","folderId":"two-oil-types"},{"name":"4バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1h2KEKi7qFrw2tpXC5WtC_pkqOiN5m3n2dIOVN8vVUvA/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"5バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1yTzrZUy0AqKVxvwdBEPnz_CHdGxV8RsYmfaE2JCSUR4/edit","folderId":"ship-cargo-safety"},{"name":"6バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1FcBs6kumYcSWId6c6dnG3CfpvV0ByHmw8GHu8-nRAss/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"7バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/15MTuBB4xjXGvcdTTDYNBH9Y-JITbBp9rKvsS7DOiW_I/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"8バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1e8AsKv7HAqrGTuzGZfBgVr28ni_vhUxPyyKuxHUpO80/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"11バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/175Jxu2s5tJzf_f73hrw4wOLgbrVJ9gX-VeWxN0h80Co/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"12バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Dce8l3SzRfULmjthHv5wtPKIRjdlQYx9wT7UKG4qy0g/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"14バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Ci3GTe0iNvr6AIAMOdWtWhBILD5aCPjlDIXnshx0kZI/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"15バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1JFTctHjGtFiQEBt3c2dGkvfNh9BFJ4PZA7fwgS_if9o/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"16バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1V68NlgR36UeR6iuLDD4MLJLIR7V9aCuNhQY9T6oqBGQ/edit","folderId":"ship-cargo-safety"},{"name":"17バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Un4ipDByuFjlDGpwF-3Yh-hjgAdZRt6Ql_qZPIW-PXk/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"18バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/13_0x4ADnL0Ht-4HQUych1YhkV1a5dq6JVoVk4mn_sec/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"},{"name":"19バース　船舶荷役安全確認表","url":"https://docs.google.com/spreadsheets/d/1Bv3lfk3D19OYutSO4ERKJNAlxccjrMwyhUFR_hS961E/edit?gid=1599872168#gid=1599872168","folderId":"ship-cargo-safety"}]},{"slotId":"card-3","title":"バース計画","useFolders":false,"folders":[],"items":[{"name":"バース計画","url":"https://zoom.us/wb/doc/Ud6p6oGrSECeJDCQzxYfog/p/115030879502336","folderId":""},{"name":"バース計画(beta)","url":"https://miro.com/welcomeonboard/SEJndTA4ZlBGNjFJVXFtTEJpL0FxaUVxUWxzYlVkUFdFUWJ6eU4wWUR1VnN4OGo5MlRMMVUxVGRCaisyVWc4SHhVemlPSlZjU2xLSHFQazlmcGdmVndwa0ZNOE9BMWluY1JPazFmM3dEUS9MY0hNRjFPc2ZMQkZlVXBvWDNUb3FnbHpza3F6REdEcmNpNEFOMmJXWXBBPT0hdjE=?share_link_id=253818057412","folderId":""}]},{"slotId":"card-4","title":"その他書類","useFolders":false,"folders":[],"items":[{"name":"給水記録","url":"https://docs.google.com/spreadsheets/d/15sLRMzEu6ukpBSvulU6yBmroVZQXbMw7wcyEB9ROBoQ/edit?gid=1923275255#gid=1923275255","folderId":""},{"name":"桟橋記録","url":"https://docs.google.com/spreadsheets/d/1R2iWMFmljTW6VoSrAu5LI78DSPoDh3u6KFzXsjCstKQ/edit?gid=653762034#gid=653762034","folderId":""},{"name":"初入港","url":"https://docs.google.com/spreadsheets/d/1hUE6qYf7GNjx0ImDQacYBwelLpjbafGgbgC-fREpqVg/edit?gid=1573289378#gid=1573289378","folderId":""},{"name":"スカッパー点検表","url":"https://docs.google.com/spreadsheets/d/1gBUq2SJ-mmT-D7eumyYM9bqPXNBA9tz-aJRtVcFxBxQ/edit?gid=1621944634#gid=1621944634","folderId":""}]},{"slotId":"card-5","title":"主務職","useFolders":false,"folders":[],"items":[{"name":"案件ID","url":"https://docs.google.com/spreadsheets/d/1oHuKQ-GK6_quWuyjKEI4w4qa-4WzDJQRJQrCyU0MpLc/edit?gid=1724890318#gid=1724890318","folderId":""},{"name":"現業課メニュー","url":"https://docs.google.com/spreadsheets/d/1tc2lPO-uLuxNTVBmQsC-LLH90SrgpMAJXwgPbJ4GJZo/edit?gid=1724890318#gid=1724890318","folderId":""}]}];
+          if (!categories.length) return;
+
+          const modal = document.createElement("div");
+          modal.className = "pier-category-modal";
+          modal.innerHTML = '<div class="pier-category-dialog" role="dialog" aria-modal="true" aria-labelledby="pierCategoryTitle"><div class="pier-category-head"><h2 id="pierCategoryTitle" class="pier-category-title"></h2><button type="button" class="pier-category-close" aria-label="close">x</button></div><div class="pier-category-list"></div></div>';
+          document.body.appendChild(modal);
+
+          const title = modal.querySelector(".pier-category-title");
+          let list = modal.querySelector(".pier-category-list");
+          const closeButton = modal.querySelector(".pier-category-close");
+
+          const close = () => modal.classList.remove("is-visible");
+          const openSheet = (item) => window.open(item.url, "_blank", "noopener,noreferrer");
+
+          const renderItems = (items, emptyText) => {
+            list.innerHTML = "";
+            if (!items.length) {
+              const empty = document.createElement("p");
+              empty.className = "pier-category-empty";
+              empty.textContent = emptyText || "この条件に一致する書類はありません。";
+              list.appendChild(empty);
+              return;
+            }
+
+            items.forEach((item) => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "pier-category-item";
+              button.textContent = item.name;
+              button.addEventListener("click", () => openSheet(item));
+              list.appendChild(button);
+            });
+          };
+
+          const openCategory = (category) => {
+            title.textContent = category.title;
+            list.innerHTML = "";
+
+            if (!category.items.length) {
+              const empty = document.createElement("p");
+              empty.className = "pier-category-empty";
+              empty.textContent = "このカテゴリにはまだ書類が登録されていません。";
+              list.appendChild(empty);
+            } else if (category.useFolders && category.folders.length) {
+              category.folders.forEach((folder) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "pier-category-item";
+                button.textContent = folder.name;
+                button.addEventListener("click", () => {
+                  title.textContent = category.title + " / " + folder.name;
+                  const folderItems = category.items.filter((item) => item.folderId === folder.id);
+                  list.innerHTML = "";
+
+                  const back = document.createElement("button");
+                  back.type = "button";
+                  back.className = "pier-category-item";
+                  back.textContent = "フォルダー一覧に戻る";
+                  back.addEventListener("click", () => openCategory(category));
+                  list.appendChild(back);
+
+                  const holder = document.createElement("div");
+                  holder.className = "pier-category-list";
+                  holder.style.padding = "0";
+                  list.appendChild(holder);
+
+                  const originalList = list;
+                  list = holder;
+                  renderItems(folderItems, "このフォルダーにはまだ書類が登録されていません。");
+                  list = originalList;
+                });
+                list.appendChild(button);
+              });
+
+              const noFolderItems = category.items.filter((item) => !item.folderId);
+              if (noFolderItems.length) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "pier-category-item";
+                button.textContent = "フォルダーなし";
+                button.addEventListener("click", () => {
+                  title.textContent = category.title + " / フォルダーなし";
+                  renderItems(noFolderItems, "フォルダーなしの書類はありません。");
+                });
+                list.appendChild(button);
+              }
+            } else {
+              renderItems(category.items, "このカテゴリにはまだ書類が登録されていません。");
+            }
+
+            modal.classList.add("is-visible");
+            closeButton.focus();
+          };
+
+          categories.forEach((category) => {
+            const card = document.querySelector('[data-pier-category-slot="' + CSS.escape(category.slotId) + '"]');
+            if (!card) return;
+            card.addEventListener("click", (event) => {
+              event.preventDefault();
+              openCategory(category);
+            });
+          });
+
+          closeButton.addEventListener("click", close);
+          modal.addEventListener("click", (event) => {
+            if (event.target === modal) close();
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") close();
+          });
+        })();
+      </script><script data-pier-guide-generated="true">
+        (() => {
+          const guideButton = document.querySelector(".guide-btn");
+          if (!guideButton) return;
+
+          const modal = document.createElement("div");
+          modal.className = "pier-guide-modal";
+          modal.innerHTML = '<div class="pier-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="pierGuideTitle"><div class="pier-guide-head"><h2 id="pierGuideTitle">使い方ガイド</h2><button type="button" class="pier-guide-close" aria-label="close">x</button></div><div class="pier-guide-body"><ol><li>担当現場名を入力すると、該当する点検表が表示されます。</li><li>表示された点検表名をクリックすると、スプレッドシートが開きます。</li><li>カテゴリカードをクリックすると、カテゴリ内の点検表一覧を確認できます。</li></ol></div></div>';
+          document.body.appendChild(modal);
+
+          const closeButton = modal.querySelector(".pier-guide-close");
+          const open = () => {
+            modal.classList.add("is-visible");
+            closeButton.focus();
+          };
+          const close = () => modal.classList.remove("is-visible");
+
+          guideButton.addEventListener("click", open);
+          closeButton.addEventListener("click", close);
+          modal.addEventListener("click", (event) => {
+            if (event.target === modal) close();
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") close();
+          });
+        })();
+      </script></body></html>
