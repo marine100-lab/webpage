@@ -1,0 +1,2384 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>リンク設定ツール</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --line: #d8dde5;
+      --text: #1f2937;
+      --muted: #64748b;
+      --accent: #0f766e;
+      --accent-strong: #115e59;
+      --danger: #b42318;
+      --focus: 0 0 0 3px rgba(15, 118, 110, .18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+
+    button:hover {
+      border-color: #9aa8ba;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: none;
+      box-shadow: var(--focus);
+      border-color: var(--accent);
+    }
+
+    .primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .primary:hover {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 64px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(10px);
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 220px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 430px) minmax(420px, 1fr);
+      gap: 18px;
+      padding: 18px 24px 32px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .panel + .panel {
+      margin-top: 18px;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .panel-heading h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      padding: 8px 10px;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      min-height: auto;
+      padding: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .url-list {
+      display: grid;
+      gap: 8px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .url-item,
+    .link-row {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .url-item {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .url-item[draggable="true"] {
+      cursor: grab;
+    }
+
+    .url-item.dragging {
+      opacity: .48;
+      border-color: var(--accent);
+      box-shadow: var(--focus);
+    }
+
+    .drag-handle {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      min-height: 42px;
+      border-radius: 6px;
+      color: var(--muted);
+      font-weight: 800;
+      user-select: none;
+    }
+
+    .url-name,
+    .slot-name {
+      font-weight: 700;
+    }
+
+    .slot-name-input {
+      margin-top: 8px;
+    }
+
+    .slot-note-input {
+      margin-top: 10px;
+    }
+
+    .url-value,
+    .slot-current {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .link-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .link-row {
+      display: grid;
+      grid-template-columns: minmax(170px, 260px) minmax(240px, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .slot-meta {
+      min-width: 0;
+    }
+
+    .assignment-options {
+      display: grid;
+      gap: 8px;
+      max-height: 260px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 8px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+    }
+
+    .check-item input {
+      min-height: auto;
+      width: 16px;
+      margin: 3px 0 0;
+    }
+
+    .check-item span {
+      overflow-wrap: anywhere;
+    }
+
+    .folder-tools {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .folder-toggle {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 8px;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .folder-toggle input {
+      min-height: auto;
+      width: 16px;
+    }
+
+    .folder-add {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .folder-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .folder-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .item-folder-select {
+      margin-top: 8px;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 150px;
+      border: 1px dashed #b9c3d0;
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+    }
+
+    .preview-frame {
+      width: 100%;
+      height: 480px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .app-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-header,
+      main {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .row,
+      .link-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="title">
+      <h1>リンク設定ツール</h1>
+      <span>HTMLを読み込み、登録URLを検索候補とカードに割り当てます</span>
+    </div>
+    <div class="header-actions">
+      <button id="loadSettingsButton" type="button">設定読込</button>
+      <button id="saveSettingsButton" type="button">設定保存</button>
+      <button id="overwriteButton" type="button">元HTMLを上書き保存</button>
+      <button id="downloadButton" class="primary" type="button">公開HTMLを書出</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="panel">
+        <div class="panel-heading">
+          <h2>元HTML</h2>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <button id="editHtmlButton" class="primary" type="button">編集するHTMLを開く</button>
+            <button id="saveAsButton" type="button">名前を付けて保存</button>
+          </div>
+          <p class="note">ChromeまたはEdgeで元HTMLを選ぶと、編集後に同じファイルへ直接上書き保存できます。</p>
+          <div id="htmlStatus" class="status">HTML未読込</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-heading">
+          <h2>スプレッドシートURL登録</h2>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="urlName">表示名</label>
+            <input id="urlName" type="text" placeholder="例: ○○桟橋">
+          </div>
+          <div class="field">
+            <label for="urlValue">URL</label>
+            <input id="urlValue" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+          </div>
+          <div class="row">
+            <button id="clearUrlButton" type="button">入力クリア</button>
+            <button id="addUrlButton" class="primary" type="button">登録</button>
+          </div>
+          <p class="note">ここで登録した表示名が、公開ページの担当現場名入力欄の候補になります。</p>
+          <div id="urlStatus" class="status"></div>
+          <div id="urlList" class="url-list" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-heading">
+          <h2>お知らせ編集</h2>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="noticeDate">日付</label>
+            <input id="noticeDate" type="date">
+          </div>
+          <div class="field">
+            <label for="noticeText">内容</label>
+            <textarea id="noticeText" placeholder="例: 5月10日はメンテナンスのため一部点検表を更新予定です。"></textarea>
+          </div>
+          <div class="row">
+            <button id="clearNoticeButton" type="button">入力クリア</button>
+            <button id="addNoticeButton" class="primary" type="button">登録</button>
+          </div>
+          <p class="note">公開ページには日付が新しい順に3件だけ表示されます。</p>
+          <div id="noticeStatus" class="status"></div>
+          <div id="noticeList" class="url-list" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-heading">
+          <h2>パッチノート編集</h2>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="patchDate">日付</label>
+            <input id="patchDate" type="date">
+          </div>
+          <div class="field">
+            <label for="patchTitle">タイトル</label>
+            <input id="patchTitle" type="text" placeholder="例：検索結果の表示位置を改善">
+          </div>
+          <div class="field">
+            <label for="patchDetail">内容</label>
+            <textarea id="patchDetail" placeholder="例：現場名を入力したあと、候補一覧を画面内で確認しやすくしました。"></textarea>
+          </div>
+          <div class="row">
+            <button id="clearPatchButton" type="button">入力クリア</button>
+            <button id="addPatchButton" class="primary" type="button">登録</button>
+          </div>
+          <p class="note">公開ページ上部の「パッチノート」ボタン内に表示されます。日付が新しい順に並びます。</p>
+          <div id="patchStatus" class="status"></div>
+          <div id="patchList" class="url-list" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="panel">
+        <div class="panel-heading">
+          <h2>カテゴリ別一覧割り当て</h2>
+        </div>
+        <div class="panel-body">
+          <div id="linkList" class="link-list">
+            <div class="empty">HTMLを読み込むと、リンク先を選べる場所が表示されます。</div>
+          </div>
+          <div id="assignStatus" class="status"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-heading">
+          <h2>確認</h2>
+        </div>
+        <div class="panel-body">
+          <iframe id="previewFrame" class="preview-frame" title="プレビュー"></iframe>
+          <div class="status">プレビュー内のリンクは確認用です。公開前に書き出したHTMLをGitHubへアップロードしてください。</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <input id="settingsFile" class="hidden" type="file" accept=".json,application/json">
+
+  <script>
+    const state = {
+      sourceName: "",
+      htmlText: "",
+      fileHandle: null,
+      document: null,
+      links: [],
+      registry: [],
+      assignments: {},
+      categoryLabels: {},
+      categoryNotes: {},
+      notices: [],
+      patchNotes: [],
+      dragRegistryId: "",
+      categoryFolderMode: {},
+      categoryFolders: {},
+      itemFolders: {}
+    };
+
+    const elements = {
+      htmlStatus: document.getElementById("htmlStatus"),
+      editHtmlButton: document.getElementById("editHtmlButton"),
+      overwriteButton: document.getElementById("overwriteButton"),
+      saveAsButton: document.getElementById("saveAsButton"),
+      urlName: document.getElementById("urlName"),
+      urlValue: document.getElementById("urlValue"),
+      noticeDate: document.getElementById("noticeDate"),
+      noticeText: document.getElementById("noticeText"),
+      addNoticeButton: document.getElementById("addNoticeButton"),
+      clearNoticeButton: document.getElementById("clearNoticeButton"),
+      noticeStatus: document.getElementById("noticeStatus"),
+      noticeList: document.getElementById("noticeList"),
+      patchDate: document.getElementById("patchDate"),
+      patchTitle: document.getElementById("patchTitle"),
+      patchDetail: document.getElementById("patchDetail"),
+      addPatchButton: document.getElementById("addPatchButton"),
+      clearPatchButton: document.getElementById("clearPatchButton"),
+      patchStatus: document.getElementById("patchStatus"),
+      patchList: document.getElementById("patchList"),
+      addUrlButton: document.getElementById("addUrlButton"),
+      clearUrlButton: document.getElementById("clearUrlButton"),
+      urlStatus: document.getElementById("urlStatus"),
+      urlList: document.getElementById("urlList"),
+      linkList: document.getElementById("linkList"),
+      assignStatus: document.getElementById("assignStatus"),
+      previewFrame: document.getElementById("previewFrame"),
+      downloadButton: document.getElementById("downloadButton"),
+      saveSettingsButton: document.getElementById("saveSettingsButton"),
+      loadSettingsButton: document.getElementById("loadSettingsButton"),
+      settingsFile: document.getElementById("settingsFile")
+    };
+
+    function uid() {
+      return `url_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function readFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+    }
+
+    function hasFileSystemAccess() {
+      return "showOpenFilePicker" in window && "showSaveFilePicker" in window;
+    }
+
+    async function writeFileHandle(handle, text) {
+      const writable = await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+    }
+
+    function extractLabel(anchor, index) {
+      const heading = anchor.querySelector("h1,h2,h3,h4,h5,h6");
+      const text = (heading ? heading.textContent : anchor.textContent).replace(/\s+/g, " ").trim();
+      return text || `リンク ${index + 1}`;
+    }
+
+    function getSlotLabel(link) {
+      return state.categoryLabels[link.slotId] || link.originalLabel || link.label || `カテゴリ ${link.index + 1}`;
+    }
+
+    function extractNote(anchor) {
+      const note = anchor.querySelector("p");
+      return note ? note.textContent.replace(/\s+/g, " ").trim() : "";
+    }
+
+    function getSlotNote(link) {
+      return state.categoryNotes[link.slotId] || link.originalNote || "";
+    }
+
+    function getCategoryFolders(slotId) {
+      if (!Array.isArray(state.categoryFolders[slotId])) state.categoryFolders[slotId] = [];
+      return state.categoryFolders[slotId];
+    }
+
+    function getItemFolder(slotId, itemId) {
+      const map = state.itemFolders[slotId] || {};
+      return map[itemId] || "";
+    }
+
+    function setItemFolder(slotId, itemId, folderId) {
+      if (!state.itemFolders[slotId]) state.itemFolders[slotId] = {};
+      if (folderId) {
+        state.itemFolders[slotId][itemId] = folderId;
+      } else {
+        delete state.itemFolders[slotId][itemId];
+      }
+    }
+
+    function findRegistryItem(name, url) {
+      return state.registry.find((item) => item.url === url) ||
+        state.registry.find((item) => item.name === name && item.url === url);
+    }
+
+    function importGeneratedCategories(doc) {
+      const script = Array.from(doc.querySelectorAll("script")).find((node) => {
+        const text = node.textContent || "";
+        return text.includes("const categories = ") && text.includes("data-pier-category-slot");
+      });
+      if (!script) return false;
+
+      const match = (script.textContent || "").match(/const categories = (\[[\s\S]*?\]);\s*if \(!categories\.length\) return;/);
+      if (!match) return false;
+
+      let categories;
+      try {
+        categories = JSON.parse(match[1]);
+      } catch {
+        return false;
+      }
+      if (!Array.isArray(categories)) return false;
+
+      categories.forEach((category) => {
+        if (!category || !category.slotId) return;
+
+        if (category.title) state.categoryLabels[category.slotId] = category.title;
+        state.assignments[category.slotId] = [];
+        state.itemFolders[category.slotId] = {};
+
+        if (category.useFolders) {
+          state.categoryFolderMode[category.slotId] = true;
+          state.categoryFolders[category.slotId] = Array.isArray(category.folders)
+            ? category.folders.filter((folder) => folder && folder.id && folder.name).map((folder) => ({ id: folder.id, name: folder.name }))
+            : [];
+        } else {
+          delete state.categoryFolderMode[category.slotId];
+          delete state.categoryFolders[category.slotId];
+        }
+
+        (Array.isArray(category.items) ? category.items : []).forEach((entry) => {
+          if (!entry || !entry.name || !entry.url) return;
+          let item = findRegistryItem(entry.name, entry.url);
+          if (!item) {
+            item = { id: uid(), name: entry.name, url: entry.url };
+            state.registry.push(item);
+          } else {
+            item.name = entry.name;
+            item.url = entry.url;
+          }
+
+          state.assignments[category.slotId].push(item.id);
+          if (entry.folderId) setItemFolder(category.slotId, item.id, entry.folderId);
+        });
+
+        if (!state.assignments[category.slotId].length) delete state.assignments[category.slotId];
+      });
+
+      persist();
+      return true;
+    }
+
+    function importPatchNotes(doc) {
+      const containers = Array.from(doc.querySelectorAll(".patch-note-list"));
+      const contactScript = doc.querySelector("script[data-pier-contact-generated]");
+      const scriptText = contactScript?.textContent || "";
+      const assignment = scriptText.match(/patchModal\.innerHTML\s*=\s*([\s\S]*?);\s*document\.body\.appendChild\(patchModal\);/);
+      if (assignment) {
+        try {
+          const html = Function(`"use strict"; return (${assignment[1]});`)();
+          const parsed = new DOMParser().parseFromString(String(html || ""), "text/html");
+          containers.push(...parsed.querySelectorAll(".patch-note-list"));
+        } catch {
+          // Existing pages may contain a hand-edited patch note string. Ignore it if it cannot be parsed safely.
+        }
+      }
+
+      const notes = containers.flatMap((container) => Array.from(container.querySelectorAll("li"))).map((node) => {
+        const dateText = node.querySelector(".patch-note-date")?.textContent.trim() || "";
+        const normalizedDate = dateText.includes("/") ? dateText.replaceAll("/", "-") : dateText;
+        return {
+          id: uid(),
+          date: normalizedDate,
+          title: node.querySelector(".patch-note-title")?.textContent.trim() || "",
+          detail: node.querySelector(".patch-note-detail")?.textContent.trim() || ""
+        };
+      }).filter((item) => item.date || item.title || item.detail);
+
+      if (notes.length) {
+        state.patchNotes = notes;
+        persist();
+      }
+    }
+
+    function parseHtml(text, fileName) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/html");
+      const anchors = Array.from(doc.querySelectorAll("a.card"));
+
+      state.sourceName = fileName;
+      state.htmlText = text;
+      state.document = doc;
+      state.links = anchors.map((anchor, index) => {
+        const slotId = anchor.dataset.linkSlot || `card-${index + 1}`;
+        anchor.dataset.linkSlot = slotId;
+        const originalLabel = extractLabel(anchor, index);
+        const originalNote = extractNote(anchor);
+        return {
+          slotId,
+          label: state.categoryLabels[slotId] || originalLabel,
+          originalLabel,
+          note: state.categoryNotes[slotId] || originalNote,
+          originalNote,
+          currentHref: anchor.getAttribute("href") || "",
+          index
+        };
+      });
+
+      importGeneratedCategories(doc);
+      importPatchNotes(doc);
+      elements.htmlStatus.textContent = `${fileName} を読込済み: 編集対象 ${state.links.length}件`;
+      renderAssignments();
+      applyAssignments();
+    }
+
+    function setWritableStatus() {
+      if (!hasFileSystemAccess()) {
+        setStatus(elements.htmlStatus, "このブラウザは直接上書き保存に未対応です。公開HTMLを書出を使ってください。");
+        return false;
+      }
+      return true;
+    }
+
+    function renderUrlList() {
+      elements.urlList.innerHTML = "";
+      if (!state.registry.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "登録URLはまだありません。";
+        elements.urlList.appendChild(empty);
+        return;
+      }
+
+      state.registry.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "url-item";
+        row.draggable = true;
+        row.dataset.registryId = item.id;
+
+        row.addEventListener("dragstart", (event) => {
+          state.dragRegistryId = item.id;
+          row.classList.add("dragging");
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", item.id);
+        });
+
+        row.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+        });
+
+        row.addEventListener("drop", (event) => {
+          event.preventDefault();
+          moveRegistryItem(state.dragRegistryId, item.id, event.clientY, row);
+        });
+
+        row.addEventListener("dragend", () => {
+          state.dragRegistryId = "";
+          row.classList.remove("dragging");
+        });
+
+        const handle = document.createElement("div");
+        handle.className = "drag-handle";
+        handle.textContent = "≡";
+        handle.title = "ドラッグして並び替え";
+
+        const body = document.createElement("div");
+        body.innerHTML = `<div class="url-name"></div><div class="url-value"></div>`;
+        body.querySelector(".url-name").textContent = item.name;
+        body.querySelector(".url-value").textContent = item.url;
+
+        const actions = document.createElement("div");
+        actions.className = "stack";
+
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.textContent = "編集";
+        edit.addEventListener("click", () => {
+          elements.urlName.value = item.name;
+          elements.urlValue.value = item.url;
+          elements.addUrlButton.dataset.editingId = item.id;
+          elements.addUrlButton.textContent = "更新";
+          elements.urlName.focus();
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "削除";
+        remove.addEventListener("click", () => {
+          state.registry = state.registry.filter((entry) => entry.id !== item.id);
+          Object.keys(state.assignments).forEach((slotId) => {
+            const next = getAssignedIds(slotId).filter((id) => id !== item.id);
+            if (next.length) {
+              state.assignments[slotId] = next;
+            } else {
+              delete state.assignments[slotId];
+            }
+            if (state.itemFolders[slotId]) delete state.itemFolders[slotId][item.id];
+          });
+          persist();
+          renderAll();
+          setStatus(elements.urlStatus, `${item.name} を削除しました。`);
+        });
+
+        actions.append(edit, remove);
+        row.append(handle, body, actions);
+        elements.urlList.appendChild(row);
+      });
+    }
+
+    function moveRegistryItem(draggedId, targetId, clientY, targetRow) {
+      if (!draggedId || !targetId || draggedId === targetId) return;
+
+      const fromIndex = state.registry.findIndex((item) => item.id === draggedId);
+      const targetIndex = state.registry.findIndex((item) => item.id === targetId);
+      if (fromIndex < 0 || targetIndex < 0) return;
+
+      const rect = targetRow.getBoundingClientRect();
+      const placeAfter = clientY > rect.top + rect.height / 2;
+      const [moved] = state.registry.splice(fromIndex, 1);
+      let insertIndex = state.registry.findIndex((item) => item.id === targetId);
+      if (placeAfter) insertIndex += 1;
+      state.registry.splice(insertIndex, 0, moved);
+
+      persist();
+      renderAll();
+      setStatus(elements.urlStatus, `${moved.name} を並び替えました。`);
+    }
+
+    function getSortedNotices() {
+      return [...state.notices].sort((a, b) => {
+        const dateCompare = String(b.date || "").localeCompare(String(a.date || ""));
+        if (dateCompare) return dateCompare;
+        return String(b.id || "").localeCompare(String(a.id || ""));
+      });
+    }
+
+    function formatNoticeDate(value) {
+      if (!value) return "";
+      const [year, month, day] = value.split("-");
+      return year && month && day ? `${year}/${month}/${day}` : value;
+    }
+
+    function renderNoticeList() {
+      if (!elements.noticeList) return;
+      elements.noticeList.innerHTML = "";
+      if (!state.notices.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "お知らせはまだありません。";
+        elements.noticeList.appendChild(empty);
+        return;
+      }
+
+      getSortedNotices().forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "url-item";
+
+        const body = document.createElement("div");
+        body.innerHTML = `<div class="url-name"></div><div class="url-value"></div>`;
+        body.querySelector(".url-name").textContent = formatNoticeDate(item.date) || "日付なし";
+        body.querySelector(".url-value").textContent = item.text;
+
+        const actions = document.createElement("div");
+        actions.className = "stack";
+
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.textContent = "編集";
+        edit.addEventListener("click", () => {
+          elements.noticeDate.value = item.date || "";
+          elements.noticeText.value = item.text || "";
+          elements.addNoticeButton.dataset.editingId = item.id;
+          elements.addNoticeButton.textContent = "更新";
+          elements.noticeText.focus();
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "削除";
+        remove.addEventListener("click", () => {
+          state.notices = state.notices.filter((entry) => entry.id !== item.id);
+          persist();
+          renderAll();
+          setStatus(elements.noticeStatus, "お知らせを削除しました。");
+        });
+
+        actions.append(edit, remove);
+        row.append(body, actions);
+        elements.noticeList.appendChild(row);
+      });
+    }
+
+    function getSortedPatchNotes() {
+      return [...state.patchNotes].sort((a, b) => {
+        const dateCompare = String(b.date || "").localeCompare(String(a.date || ""));
+        if (dateCompare) return dateCompare;
+        return String(b.id || "").localeCompare(String(a.id || ""));
+      });
+    }
+
+    function renderPatchList() {
+      if (!elements.patchList) return;
+      elements.patchList.innerHTML = "";
+      if (!state.patchNotes.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "パッチノートはまだありません。";
+        elements.patchList.appendChild(empty);
+        return;
+      }
+
+      getSortedPatchNotes().forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "url-item";
+
+        const body = document.createElement("div");
+        body.innerHTML = `<div class="url-name"></div><div class="url-value"></div>`;
+        body.querySelector(".url-name").textContent = `${formatNoticeDate(item.date) || "日付なし"} ${item.title || ""}`.trim();
+        body.querySelector(".url-value").textContent = item.detail || "";
+
+        const actions = document.createElement("div");
+        actions.className = "stack";
+
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.textContent = "編集";
+        edit.addEventListener("click", () => {
+          elements.patchDate.value = item.date || "";
+          elements.patchTitle.value = item.title || "";
+          elements.patchDetail.value = item.detail || "";
+          elements.addPatchButton.dataset.editingId = item.id;
+          elements.addPatchButton.textContent = "更新";
+          elements.patchTitle.focus();
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "削除";
+        remove.addEventListener("click", () => {
+          state.patchNotes = state.patchNotes.filter((entry) => entry.id !== item.id);
+          persist();
+          renderAll();
+          setStatus(elements.patchStatus, "パッチノートを削除しました。");
+        });
+
+        actions.append(edit, remove);
+        row.append(body, actions);
+        elements.patchList.appendChild(row);
+      });
+    }
+
+    function renderAssignments() {
+      elements.linkList.innerHTML = "";
+      if (!state.links.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "HTMLを読み込むと、リンク先を選べる場所が表示されます。";
+        elements.linkList.appendChild(empty);
+        return;
+      }
+
+      state.links.forEach((link) => {
+        const row = document.createElement("div");
+        row.className = "link-row";
+
+        const meta = document.createElement("div");
+        meta.className = "slot-meta";
+        meta.innerHTML = `<div class="slot-name"></div><div class="slot-current"></div>`;
+        meta.querySelector(".slot-name").textContent = "カテゴリ名";
+        meta.querySelector(".slot-current").textContent = link.currentHref || "現在のリンクなし";
+
+        const nameInput = document.createElement("input");
+        nameInput.className = "slot-name-input";
+        nameInput.type = "text";
+        nameInput.value = getSlotLabel(link);
+        nameInput.placeholder = link.originalLabel || `カテゴリ ${link.index + 1}`;
+        nameInput.addEventListener("input", () => {
+          const value = nameInput.value.trim();
+          if (value) {
+            state.categoryLabels[link.slotId] = value;
+            link.label = value;
+          } else {
+            delete state.categoryLabels[link.slotId];
+            link.label = link.originalLabel;
+          }
+          persist();
+          applyAssignments();
+          setStatus(elements.assignStatus, "カテゴリ名を更新しました。");
+        });
+        meta.appendChild(nameInput);
+
+        const noteLabel = document.createElement("label");
+        noteLabel.className = "slot-current";
+        noteLabel.textContent = "備考";
+
+        const noteInput = document.createElement("textarea");
+        noteInput.className = "slot-note-input";
+        noteInput.value = getSlotNote(link);
+        noteInput.placeholder = link.originalNote || "カテゴリ内に表示する備考";
+        noteInput.addEventListener("input", () => {
+          const value = noteInput.value.trim();
+          if (value) {
+            state.categoryNotes[link.slotId] = value;
+            link.note = value;
+          } else {
+            delete state.categoryNotes[link.slotId];
+            link.note = link.originalNote;
+          }
+          persist();
+          applyAssignments();
+          setStatus(elements.assignStatus, "備考を更新しました。");
+        });
+        meta.append(noteLabel, noteInput);
+
+        const folderTools = document.createElement("div");
+        folderTools.className = "folder-tools";
+
+        const folderToggleLabel = document.createElement("label");
+        folderToggleLabel.className = "folder-toggle";
+        const folderToggle = document.createElement("input");
+        folderToggle.type = "checkbox";
+        folderToggle.checked = Boolean(state.categoryFolderMode[link.slotId]);
+        const folderToggleText = document.createElement("span");
+        folderToggleText.textContent = "フォルダーを使う";
+        folderToggleLabel.append(folderToggle, folderToggleText);
+
+        const folderAdd = document.createElement("div");
+        folderAdd.className = "folder-add";
+        const folderInput = document.createElement("input");
+        folderInput.type = "text";
+        folderInput.placeholder = "例: 受入書類";
+        const folderAddButton = document.createElement("button");
+        folderAddButton.type = "button";
+        folderAddButton.textContent = "追加";
+        folderAdd.append(folderInput, folderAddButton);
+
+        const folderList = document.createElement("div");
+        folderList.className = "folder-list";
+
+        const renderFolderList = () => {
+          folderList.innerHTML = "";
+          const enabled = Boolean(state.categoryFolderMode[link.slotId]);
+          folderAdd.style.display = enabled ? "grid" : "none";
+          folderList.style.display = enabled ? "grid" : "none";
+          if (!enabled) return;
+
+          const folders = getCategoryFolders(link.slotId);
+          if (!folders.length) {
+            const empty = document.createElement("div");
+            empty.className = "slot-current";
+            empty.textContent = "フォルダーはまだありません。";
+            folderList.appendChild(empty);
+            return;
+          }
+
+          folders.forEach((folder) => {
+            const row = document.createElement("div");
+            row.className = "folder-row";
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = folder.name;
+            input.addEventListener("change", () => {
+              folder.name = input.value.trim() || folder.name;
+              persist();
+              renderAll();
+              setStatus(elements.assignStatus, "フォルダー名を更新しました。");
+            });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "danger";
+            remove.textContent = "削除";
+            remove.addEventListener("click", () => {
+              state.categoryFolders[link.slotId] = getCategoryFolders(link.slotId).filter((entry) => entry.id !== folder.id);
+              Object.keys(state.itemFolders[link.slotId] || {}).forEach((itemId) => {
+                if (state.itemFolders[link.slotId][itemId] === folder.id) delete state.itemFolders[link.slotId][itemId];
+              });
+              persist();
+              renderAll();
+              setStatus(elements.assignStatus, "フォルダーを削除しました。");
+            });
+
+            row.append(input, remove);
+            folderList.appendChild(row);
+          });
+        };
+
+        folderToggle.addEventListener("change", () => {
+          state.categoryFolderMode[link.slotId] = folderToggle.checked;
+          persist();
+          renderAll();
+          setStatus(elements.assignStatus, folderToggle.checked ? "フォルダー表示を有効にしました。" : "フォルダー表示を無効にしました。");
+        });
+
+        folderAddButton.addEventListener("click", () => {
+          const name = folderInput.value.trim();
+          if (!name) {
+            setStatus(elements.assignStatus, "フォルダー名を入力してください。");
+            return;
+          }
+          getCategoryFolders(link.slotId).push({ id: uid(), name });
+          folderInput.value = "";
+          persist();
+          renderAll();
+          setStatus(elements.assignStatus, "フォルダーを追加しました。");
+        });
+
+        folderTools.append(folderToggleLabel, folderAdd, folderList);
+        meta.appendChild(folderTools);
+        renderFolderList();
+
+        const options = document.createElement("div");
+        options.className = "assignment-options";
+        options.dataset.slotId = link.slotId;
+
+        if (!state.registry.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "先にスプレッドシートURLを登録してください。";
+          options.appendChild(empty);
+        } else {
+          const selected = new Set(getAssignedIds(link.slotId));
+          state.registry.forEach((item) => {
+            const label = document.createElement("label");
+            label.className = "check-item";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = item.id;
+            checkbox.checked = selected.has(item.id);
+            checkbox.addEventListener("change", () => {
+              const ids = getAssignedIds(link.slotId);
+              const next = new Set(ids);
+              if (checkbox.checked) {
+                next.add(item.id);
+              } else {
+                next.delete(item.id);
+              }
+              const values = Array.from(next);
+              if (values.length) {
+                state.assignments[link.slotId] = values;
+              } else {
+                delete state.assignments[link.slotId];
+              }
+              persist();
+              applyAssignments();
+              setStatus(elements.assignStatus, `${getSlotLabel(link)} の一覧を更新しました。`);
+            });
+
+            const text = document.createElement("span");
+            text.textContent = item.name;
+
+            if (state.categoryFolderMode[link.slotId]) {
+              const folderSelect = document.createElement("select");
+              folderSelect.className = "item-folder-select";
+              folderSelect.disabled = !checkbox.checked;
+
+              const noneOption = document.createElement("option");
+              noneOption.value = "";
+              noneOption.textContent = "フォルダーなし";
+              folderSelect.appendChild(noneOption);
+
+              getCategoryFolders(link.slotId).forEach((folder) => {
+                const option = document.createElement("option");
+                option.value = folder.id;
+                option.textContent = folder.name;
+                folderSelect.appendChild(option);
+              });
+
+              folderSelect.value = getItemFolder(link.slotId, item.id);
+              folderSelect.addEventListener("change", () => {
+                setItemFolder(link.slotId, item.id, folderSelect.value);
+                persist();
+                applyAssignments();
+                setStatus(elements.assignStatus, "点検表のフォルダーを更新しました。");
+              });
+
+              checkbox.addEventListener("change", () => {
+                folderSelect.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                  setItemFolder(link.slotId, item.id, "");
+                }
+              });
+
+              text.appendChild(folderSelect);
+            }
+            label.append(checkbox, text);
+            options.appendChild(label);
+          });
+        }
+
+        row.append(meta, options);
+        elements.linkList.appendChild(row);
+      });
+    }
+
+    function getAssignedIds(slotId) {
+      const value = state.assignments[slotId];
+      if (Array.isArray(value)) return value.filter(Boolean);
+      if (typeof value === "string" && value) return [value];
+      return [];
+    }
+
+    function applyAssignments() {
+      if (!state.document) return;
+
+      state.links.forEach((link) => {
+        const anchor = state.document.querySelector(`a.card[data-link-slot="${CSS.escape(link.slotId)}"]`);
+        if (!anchor) return;
+
+        const label = getSlotLabel(link);
+        const heading = anchor.querySelector("h1,h2,h3,h4,h5,h6");
+        if (heading) heading.textContent = label;
+        const note = anchor.querySelector("p");
+        if (note) note.textContent = getSlotNote(link);
+
+        const count = getAssignedIds(link.slotId).length;
+        anchor.setAttribute("href", "#");
+        anchor.dataset.pierCategorySlot = link.slotId;
+        anchor.dataset.pierCategoryTitle = label;
+        anchor.removeAttribute("target");
+        anchor.removeAttribute("rel");
+        anchor.setAttribute("aria-label", count ? `${label} の書類一覧を開く` : `${label} は未登録です`);
+      });
+
+      updatePreview();
+    }
+
+    function moveSiteSearchPanelAboveCards(doc) {
+      const cards = doc.querySelector("section.cards");
+      const candidateBox = doc.querySelector(".candidate-box");
+      const sitePanel = candidateBox ? candidateBox.closest(".panel") : null;
+      const anchor = doc.querySelector(".hero") || doc.querySelector(".topbar");
+
+      if (!cards || !sitePanel || !anchor || !anchor.parentElement) return;
+
+      anchor.after(sitePanel);
+      sitePanel.after(cards);
+
+      sitePanel.dataset.pierPortalMoved = "true";
+      cards.dataset.pierPortalMoved = "true";
+    }
+
+    function cleanPortalLayout(doc) {
+      const brandText = doc.querySelector(".brand > div:not(.brand-mark)");
+      if (brandText) brandText.textContent = "桟橋荷役作業 点検ポータル";
+
+      const heroTitle = doc.querySelector(".hero h1");
+      if (heroTitle) heroTitle.textContent = "各種点検表一覧";
+
+      const heroLead = doc.querySelector(".hero-content > p");
+      if (heroLead) heroLead.remove();
+
+      doc.querySelectorAll(".search-note").forEach((node) => node.remove());
+      doc.querySelectorAll(".section-title").forEach((node) => node.remove());
+
+      const candidateBox = doc.querySelector(".candidate-box");
+      const sitePanel = candidateBox ? candidateBox.closest(".panel") : null;
+      const sitePanelLead = sitePanel ? sitePanel.querySelector(".panel-body > p") : null;
+      if (sitePanelLead) sitePanelLead.remove();
+
+      const favoritePanel = doc.querySelector(".panel.favorite");
+      if (favoritePanel) favoritePanel.remove();
+
+      doc.querySelectorAll(".chatbot-shell").forEach((node) => node.remove());
+      doc.querySelectorAll("script").forEach((script) => {
+        if ((script.textContent || "").includes("chatbotPanel")) script.remove();
+      });
+
+      const style = doc.createElement("style");
+      style.dataset.pierPortalGenerated = "true";
+      style.textContent = `
+        .brand > div:not(.brand-mark) {
+          white-space: nowrap;
+        }
+        .hero h1 {
+          white-space: nowrap;
+          font-size: clamp(34px, 4vw, 56px);
+        }
+        .hero-content {
+          padding-top: 48px;
+          padding-bottom: 42px;
+        }
+        .search-card {
+          margin-top: 22px;
+        }
+        .lower-grid {
+          grid-template-columns: 1fr;
+          margin-top: 24px;
+        }
+        .lower-grid .panel {
+          width: 100%;
+        }
+        .cards {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 14px;
+          margin-top: 22px;
+        }
+        .card {
+          min-height: 210px;
+          padding: 20px 16px;
+          border-radius: 18px;
+        }
+        .icon-wrap {
+          width: 78px;
+          height: 78px;
+          margin-bottom: 14px;
+          font-size: 34px;
+        }
+        .card h3 {
+          font-size: 16px;
+          line-height: 1.4;
+        }
+        .card p {
+          font-size: 13px;
+          line-height: 1.6;
+        }
+        .card .card-link {
+          width: 32px;
+          height: 32px;
+          font-size: 17px;
+          margin-top: 14px;
+        }
+        @media (max-width: 1100px) {
+          .cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 640px) {
+          .brand > div:not(.brand-mark),
+          .hero h1 {
+            white-space: normal;
+          }
+          .cards {
+            grid-template-columns: 1fr;
+          }
+        }
+      `;
+      doc.head.appendChild(style);
+    }
+
+    function installGuideFeature(doc) {
+      doc.querySelectorAll("[data-pier-guide-generated]").forEach((node) => node.remove());
+      const guideButton = doc.querySelector(".guide-btn");
+      if (!guideButton) return;
+
+      guideButton.setAttribute("type", "button");
+
+      const style = doc.createElement("style");
+      style.dataset.pierGuideGenerated = "true";
+      style.textContent = `
+        .pier-guide-modal {
+          position: fixed;
+          inset: 0;
+          z-index: 10000;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          background: rgba(15, 23, 42, .52);
+          padding: 18px;
+        }
+        .pier-guide-modal.is-visible {
+          display: flex;
+        }
+        .pier-guide-dialog {
+          width: min(560px, 100%);
+          border-radius: 12px;
+          background: #fff;
+          box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+          color: #0f172a;
+          overflow: hidden;
+        }
+        .pier-guide-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 16px 18px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .pier-guide-head h2 {
+          margin: 0;
+          font-size: 20px;
+        }
+        .pier-guide-close {
+          min-width: 40px;
+          min-height: 40px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #fff;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+        }
+        .pier-guide-body {
+          padding: 18px 22px 22px;
+        }
+        .pier-guide-body ol {
+          margin: 0;
+          padding-left: 1.4em;
+        }
+        .pier-guide-body li {
+          margin: 0 0 10px;
+          line-height: 1.7;
+        }
+      `;
+      doc.head.appendChild(style);
+
+      const script = doc.createElement("script");
+      script.dataset.pierGuideGenerated = "true";
+      script.textContent = `
+        (() => {
+          const guideButton = document.querySelector(".guide-btn");
+          if (!guideButton) return;
+
+          const modal = document.createElement("div");
+          modal.className = "pier-guide-modal";
+          modal.innerHTML = '<div class="pier-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="pierGuideTitle"><div class="pier-guide-head"><h2 id="pierGuideTitle">使い方ガイド</h2><button type="button" class="pier-guide-close" aria-label="close">x</button></div><div class="pier-guide-body"><ol><li>担当現場名を入力すると、該当する点検表が表示されます。</li><li>表示された点検表名をクリックすると、スプレッドシートが開きます。</li><li>カテゴリカードをクリックすると、カテゴリ内の点検表一覧を確認できます。</li></ol></div></div>';
+          document.body.appendChild(modal);
+
+          const closeButton = modal.querySelector(".pier-guide-close");
+          const open = () => {
+            modal.classList.add("is-visible");
+            closeButton.focus();
+          };
+          const close = () => modal.classList.remove("is-visible");
+
+          guideButton.addEventListener("click", open);
+          closeButton.addEventListener("click", close);
+          modal.addEventListener("click", (event) => {
+            if (event.target === modal) close();
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") close();
+          });
+        })();
+      `;
+      doc.body.appendChild(script);
+    }
+
+    function installNoticeFeature(doc) {
+      const notice = doc.querySelector(".notice");
+      if (!notice) return;
+
+      const latest = getSortedNotices().slice(0, 3);
+      const left = notice.querySelector("div:first-child") || notice;
+      const right = notice.querySelector(".notice-right");
+
+      left.innerHTML = "";
+      const heading = doc.createElement("strong");
+      heading.textContent = "お知らせ";
+      left.appendChild(heading);
+
+      const list = doc.createElement("div");
+      list.className = "notice-list";
+      if (!latest.length) {
+        const empty = doc.createElement("small");
+        empty.textContent = "現在のお知らせはありません。";
+        list.appendChild(empty);
+      } else {
+        latest.forEach((item) => {
+          const entry = doc.createElement("div");
+          entry.className = "notice-item";
+
+          const date = doc.createElement("span");
+          date.className = "notice-date";
+          date.textContent = formatNoticeDate(item.date);
+
+          const text = doc.createElement("span");
+          text.className = "notice-text";
+          text.textContent = item.text || "";
+
+          entry.append(date, text);
+          list.appendChild(entry);
+        });
+      }
+      left.appendChild(list);
+
+      if (right) right.remove();
+
+      const style = doc.createElement("style");
+      style.dataset.pierPortalGenerated = "true";
+      style.textContent = `
+        .notice {
+          grid-template-columns: 1fr;
+        }
+        .notice-list {
+          display: grid;
+          gap: 10px;
+          margin-top: 12px;
+        }
+        .notice-item {
+          display: grid;
+          grid-template-columns: 110px 1fr;
+          gap: 12px;
+          align-items: start;
+          color: #334155;
+          line-height: 1.6;
+        }
+        .notice-date {
+          color: #1f67c7;
+          font-weight: 800;
+        }
+        .notice-text {
+          overflow-wrap: anywhere;
+        }
+        @media (max-width: 640px) {
+          .notice-item {
+            grid-template-columns: 1fr;
+            gap: 2px;
+          }
+        }
+      `;
+      doc.head.appendChild(style);
+    }
+
+    function buildPatchNotesDialogHtml(doc) {
+      const dialog = doc.createElement("div");
+      dialog.className = "pier-contact-dialog";
+      dialog.setAttribute("role", "dialog");
+      dialog.setAttribute("aria-modal", "true");
+      dialog.setAttribute("aria-labelledby", "pierPatchTitle");
+
+      const head = doc.createElement("div");
+      head.className = "pier-contact-head";
+
+      const heading = doc.createElement("h2");
+      heading.id = "pierPatchTitle";
+      heading.textContent = "パッチノート";
+
+      const close = doc.createElement("button");
+      close.type = "button";
+      close.className = "pier-contact-close patch-notes-close";
+      close.setAttribute("aria-label", "close");
+      close.textContent = "x";
+
+      head.append(heading, close);
+
+      const body = doc.createElement("div");
+      body.className = "pier-contact-body";
+
+      const list = doc.createElement("ul");
+      list.className = "patch-note-list";
+
+      const notes = getSortedPatchNotes();
+      if (!notes.length) {
+        const item = doc.createElement("li");
+        const title = doc.createElement("span");
+        title.className = "patch-note-title";
+        title.textContent = "現在表示できるパッチノートはありません";
+        item.appendChild(title);
+        list.appendChild(item);
+      } else {
+        notes.forEach((note) => {
+          const item = doc.createElement("li");
+
+          const date = doc.createElement("span");
+          date.className = "patch-note-date";
+          date.textContent = formatNoticeDate(note.date);
+
+          const title = doc.createElement("span");
+          title.className = "patch-note-title";
+          title.textContent = note.title || "";
+
+          const detail = doc.createElement("span");
+          detail.className = "patch-note-detail";
+          detail.textContent = note.detail || "";
+
+          item.append(date, title, detail);
+          list.appendChild(item);
+        });
+      }
+
+      body.appendChild(list);
+      dialog.append(head, body);
+      return dialog.outerHTML;
+    }
+
+    function installPatchNotesFeature(doc) {
+      const script = doc.querySelector("script[data-pier-contact-generated]");
+      if (!script) return;
+
+      const dialogHtml = buildPatchNotesDialogHtml(doc);
+      const source = script.textContent || "";
+      const replacement = `patchModal.innerHTML = ${JSON.stringify(dialogHtml)};`;
+      if (source.includes("patchModal.innerHTML =")) {
+        script.textContent = source.replace(/patchModal\.innerHTML = [\s\S]*?;\s*document\.body\.appendChild\(patchModal\);/, `${replacement}\n          document.body.appendChild(patchModal);`);
+      }
+    }
+
+    function installSiteSearchFeature() {
+      if (!state.document) return;
+
+      const doc = state.document;
+      doc.querySelectorAll("[data-pier-portal-generated]").forEach((node) => node.remove());
+
+      const input = doc.querySelector("#siteName");
+      if (!input) return;
+
+      moveSiteSearchPanelAboveCards(doc);
+
+      const items = state.registry.map((item) => ({
+        name: item.name,
+        url: item.url
+      }));
+
+      input.setAttribute("autocomplete", "off");
+      input.removeAttribute("list");
+
+      const style = doc.createElement("style");
+      style.dataset.pierPortalGenerated = "true";
+      style.textContent = `
+        .candidate-box.has-results {
+          display: grid;
+          align-items: stretch;
+          justify-content: stretch;
+          gap: 10px;
+          border-style: solid;
+          color: #0f172a;
+          text-align: left;
+        }
+        .site-result-button {
+          width: 100%;
+          min-height: 46px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #fff;
+          color: #0f172a;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+          line-height: 1.35;
+          padding: 11px 13px;
+          text-align: left;
+        }
+        .site-result-button:hover,
+        .site-result-button:focus-visible {
+          border-color: #0284c7;
+          box-shadow: 0 0 0 3px rgba(2, 132, 199, .16);
+          outline: none;
+        }
+        .site-result-empty {
+          align-self: center;
+          color: #64748b;
+          margin: 0;
+          text-align: center;
+        }
+      `;
+      doc.head.appendChild(style);
+
+      const script = doc.createElement("script");
+      script.dataset.pierPortalGenerated = "true";
+      script.textContent = `
+        (() => {
+          const sheets = ${JSON.stringify(items)};
+          const input = document.getElementById("siteName");
+          const resultBox = document.querySelector(".candidate-box");
+          if (!input || !sheets.length) return;
+
+          let lastOpened = "";
+
+          const normalize = (value) => String(value || "").trim().toLowerCase();
+          const openSheet = (item) => {
+            if (!item || !item.url || lastOpened === item.url) return;
+            lastOpened = item.url;
+            window.open(item.url, "_blank", "noopener,noreferrer");
+            window.setTimeout(() => {
+              lastOpened = "";
+            }, 1200);
+          };
+
+          const findExact = () => {
+            const key = normalize(input.value);
+            return sheets.find((item) => normalize(item.name) === key);
+          };
+
+          const getLeadingNumber = (value) => {
+            const match = String(value || "").trim().match(/^\\d+/);
+            return match ? match[0] : "";
+          };
+
+          const getMatches = (key) => {
+            const isNumeric = /^\\d+$/.test(key);
+            const seen = new Set();
+            return sheets.filter((item) => {
+              const name = normalize(item.name);
+              const matched = isNumeric
+                ? getLeadingNumber(item.name) === key
+                : name.includes(key);
+              if (!matched) return false;
+
+              const uniqueKey = normalize(item.url || item.name);
+              if (seen.has(uniqueKey)) return false;
+              seen.add(uniqueKey);
+              return true;
+            }).slice(0, 12);
+          };
+
+          const renderResultBox = (matches, key) => {
+            if (!resultBox) return;
+            resultBox.innerHTML = "";
+
+            if (!key) {
+              resultBox.classList.remove("has-results");
+              resultBox.innerHTML = '<div><div style="font-size:44px;margin-bottom:10px;">🔎</div>現場名を入力して検索してください</div>';
+              return;
+            }
+
+            resultBox.classList.add("has-results");
+            if (!matches.length) {
+              const empty = document.createElement("p");
+              empty.className = "site-result-empty";
+              empty.textContent = "一致する現場がありません。";
+              resultBox.appendChild(empty);
+              return;
+            }
+
+            matches.slice(0, 12).forEach((item) => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "site-result-button";
+              button.textContent = item.name;
+              button.addEventListener("click", () => {
+                input.value = item.name;
+                openSheet(item);
+              });
+              resultBox.appendChild(button);
+            });
+          };
+
+          const render = () => {
+            const key = normalize(input.value);
+            if (!key) {
+              renderResultBox([], key);
+              return;
+            }
+
+            const matches = getMatches(key);
+
+            renderResultBox(matches, key);
+          };
+
+          input.addEventListener("input", render);
+          input.addEventListener("change", () => openSheet(findExact()));
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              const exact = findExact();
+              if (exact) {
+                event.preventDefault();
+                openSheet(exact);
+              }
+            }
+          });
+        })();
+      `;
+      doc.body.appendChild(script);
+
+      const categories = state.links.map((link) => ({
+        slotId: link.slotId,
+        title: getSlotLabel(link),
+        useFolders: Boolean(state.categoryFolderMode[link.slotId]),
+        folders: getCategoryFolders(link.slotId).map((folder) => ({ id: folder.id, name: folder.name })),
+        items: state.registry
+          .filter((item) => getAssignedIds(link.slotId).includes(item.id))
+          .map((item) => ({ name: item.name, url: item.url, folderId: getItemFolder(link.slotId, item.id) }))
+      }));
+
+      const categoryStyle = doc.createElement("style");
+      categoryStyle.dataset.pierPortalGenerated = "true";
+      categoryStyle.textContent = `
+        .pier-category-modal {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          background: rgba(15, 23, 42, .52);
+          padding: 18px;
+        }
+        .pier-category-modal.is-visible {
+          display: flex;
+        }
+        .pier-category-dialog {
+          width: min(720px, 100%);
+          max-height: min(680px, 88vh);
+          overflow: auto;
+          border-radius: 10px;
+          background: #fff;
+          box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+        }
+        .pier-category-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 16px 18px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .pier-category-title {
+          margin: 0;
+          color: #0f172a;
+          font-size: 20px;
+          line-height: 1.3;
+        }
+        .pier-category-close {
+          min-width: 40px;
+          min-height: 40px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #fff;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+        }
+        .pier-category-list {
+          display: grid;
+          gap: 10px;
+          padding: 16px 18px 18px;
+        }
+        .pier-category-item {
+          width: 100%;
+          min-height: 48px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #0f172a;
+          cursor: pointer;
+          font: inherit;
+          font-weight: 700;
+          line-height: 1.35;
+          padding: 12px 14px;
+          text-align: left;
+        }
+        .pier-category-item:hover,
+        .pier-category-item:focus-visible {
+          border-color: #0284c7;
+          box-shadow: 0 0 0 3px rgba(2, 132, 199, .16);
+          outline: none;
+        }
+        .pier-category-empty {
+          margin: 0;
+          color: #64748b;
+          padding: 18px;
+        }
+      `;
+      doc.head.appendChild(categoryStyle);
+
+      const categoryScript = doc.createElement("script");
+      categoryScript.dataset.pierPortalGenerated = "true";
+      categoryScript.textContent = `
+        (() => {
+          const categories = ${JSON.stringify(categories)};
+          if (!categories.length) return;
+
+          const modal = document.createElement("div");
+          modal.className = "pier-category-modal";
+          modal.innerHTML = '<div class="pier-category-dialog" role="dialog" aria-modal="true" aria-labelledby="pierCategoryTitle"><div class="pier-category-head"><h2 id="pierCategoryTitle" class="pier-category-title"></h2><button type="button" class="pier-category-close" aria-label="close">x</button></div><div class="pier-category-list"></div></div>';
+          document.body.appendChild(modal);
+
+          const title = modal.querySelector(".pier-category-title");
+          let list = modal.querySelector(".pier-category-list");
+          const closeButton = modal.querySelector(".pier-category-close");
+
+          const close = () => modal.classList.remove("is-visible");
+          const openSheet = (item) => window.open(item.url, "_blank", "noopener,noreferrer");
+
+          const renderItems = (items, emptyText) => {
+            list.innerHTML = "";
+            if (!items.length) {
+              const empty = document.createElement("p");
+              empty.className = "pier-category-empty";
+              empty.textContent = emptyText || "この条件に一致する書類はありません。";
+              list.appendChild(empty);
+              return;
+            }
+
+            items.forEach((item) => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "pier-category-item";
+              button.textContent = item.name;
+              button.addEventListener("click", () => openSheet(item));
+              list.appendChild(button);
+            });
+          };
+
+          const openCategory = (category) => {
+            title.textContent = category.title;
+            list.innerHTML = "";
+
+            if (!category.items.length) {
+              const empty = document.createElement("p");
+              empty.className = "pier-category-empty";
+              empty.textContent = "このカテゴリにはまだ書類が登録されていません。";
+              list.appendChild(empty);
+            } else if (category.useFolders && category.folders.length) {
+              category.folders.forEach((folder) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "pier-category-item";
+                button.textContent = folder.name;
+                button.addEventListener("click", () => {
+                  title.textContent = category.title + " / " + folder.name;
+                  const folderItems = category.items.filter((item) => item.folderId === folder.id);
+                  list.innerHTML = "";
+
+                  const back = document.createElement("button");
+                  back.type = "button";
+                  back.className = "pier-category-item";
+                  back.textContent = "フォルダー一覧に戻る";
+                  back.addEventListener("click", () => openCategory(category));
+                  list.appendChild(back);
+
+                  const holder = document.createElement("div");
+                  holder.className = "pier-category-list";
+                  holder.style.padding = "0";
+                  list.appendChild(holder);
+
+                  const originalList = list;
+                  list = holder;
+                  renderItems(folderItems, "このフォルダーにはまだ書類が登録されていません。");
+                  list = originalList;
+                });
+                list.appendChild(button);
+              });
+
+              const noFolderItems = category.items.filter((item) => !item.folderId);
+              if (noFolderItems.length) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "pier-category-item";
+                button.textContent = "フォルダーなし";
+                button.addEventListener("click", () => {
+                  title.textContent = category.title + " / フォルダーなし";
+                  renderItems(noFolderItems, "フォルダーなしの書類はありません。");
+                });
+                list.appendChild(button);
+              }
+            } else {
+              renderItems(category.items, "このカテゴリにはまだ書類が登録されていません。");
+            }
+
+            modal.classList.add("is-visible");
+            closeButton.focus();
+          };
+
+          categories.forEach((category) => {
+            const card = document.querySelector('[data-pier-category-slot="' + CSS.escape(category.slotId) + '"]');
+            if (!card) return;
+            card.addEventListener("click", (event) => {
+              event.preventDefault();
+              openCategory(category);
+            });
+          });
+
+          closeButton.addEventListener("click", close);
+          modal.addEventListener("click", (event) => {
+            if (event.target === modal) close();
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") close();
+          });
+        })();
+      `;
+      doc.body.appendChild(categoryScript);
+    }
+
+    function getOutputHtml() {
+      if (!state.document) return "";
+      installSiteSearchFeature();
+      cleanPortalLayout(state.document);
+      installNoticeFeature(state.document);
+      installPatchNotesFeature(state.document);
+      installGuideFeature(state.document);
+      return "<!doctype html>\n" + state.document.documentElement.outerHTML;
+    }
+
+    function updatePreview() {
+      const output = getOutputHtml();
+      elements.previewFrame.srcdoc = output || "";
+    }
+
+    function setStatus(target, message) {
+      target.textContent = message;
+      window.clearTimeout(target._timer);
+      target._timer = window.setTimeout(() => {
+        target.textContent = "";
+      }, 4500);
+    }
+
+    function persist() {
+      const data = {
+        registry: state.registry,
+        assignments: state.assignments,
+        categoryLabels: state.categoryLabels,
+        categoryNotes: state.categoryNotes,
+        notices: state.notices,
+        patchNotes: state.patchNotes,
+        categoryFolderMode: state.categoryFolderMode,
+        categoryFolders: state.categoryFolders,
+        itemFolders: state.itemFolders
+      };
+      localStorage.setItem("pierPortalLinkEditor", JSON.stringify(data));
+    }
+
+    function normalizeAssignments(assignments) {
+      if (!assignments || typeof assignments !== "object") return {};
+      return Object.fromEntries(
+        Object.entries(assignments).map(([slotId, value]) => {
+          if (Array.isArray(value)) return [slotId, value.filter(Boolean)];
+          if (typeof value === "string" && value) return [slotId, [value]];
+          return [slotId, []];
+        }).filter(([, values]) => values.length)
+      );
+    }
+
+    function restore() {
+      const raw = localStorage.getItem("pierPortalLinkEditor");
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        state.registry = Array.isArray(data.registry) ? data.registry : [];
+        state.assignments = normalizeAssignments(data.assignments);
+        state.categoryLabels = data.categoryLabels && typeof data.categoryLabels === "object" ? data.categoryLabels : {};
+        state.categoryNotes = data.categoryNotes && typeof data.categoryNotes === "object" ? data.categoryNotes : {};
+        state.notices = Array.isArray(data.notices) ? data.notices : [];
+        state.patchNotes = Array.isArray(data.patchNotes) ? data.patchNotes : [];
+        state.categoryFolderMode = data.categoryFolderMode && typeof data.categoryFolderMode === "object" ? data.categoryFolderMode : {};
+        state.categoryFolders = data.categoryFolders && typeof data.categoryFolders === "object" ? data.categoryFolders : {};
+        state.itemFolders = data.itemFolders && typeof data.itemFolders === "object" ? data.itemFolders : {};
+      } catch {
+        state.registry = [];
+        state.assignments = {};
+        state.categoryLabels = {};
+        state.categoryNotes = {};
+        state.notices = [];
+        state.patchNotes = [];
+        state.categoryFolderMode = {};
+        state.categoryFolders = {};
+        state.itemFolders = {};
+      }
+    }
+
+    function downloadFile(fileName, text, type) {
+      const blob = new Blob([text], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function renderAll() {
+      renderUrlList();
+      renderNoticeList();
+      renderPatchList();
+      renderAssignments();
+      applyAssignments();
+    }
+
+    elements.editHtmlButton.addEventListener("click", async () => {
+      if (!setWritableStatus()) return;
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{
+            description: "HTMLファイル",
+            accept: { "text/html": [".html", ".htm"] }
+          }]
+        });
+        const file = await handle.getFile();
+        state.fileHandle = handle;
+        parseHtml(await file.text(), file.name);
+        elements.htmlStatus.textContent = `${file.name} を編集用に開きました。`;
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          elements.htmlStatus.textContent = `HTMLの読込に失敗しました: ${error.message || error}`;
+        }
+      }
+    });
+
+    elements.addUrlButton.addEventListener("click", () => {
+      const name = elements.urlName.value.trim();
+      const url = elements.urlValue.value.trim();
+      const editingId = elements.addUrlButton.dataset.editingId;
+
+      if (!name || !url) {
+        setStatus(elements.urlStatus, "表示名とURLを入力してください。");
+        return;
+      }
+
+      try {
+        new URL(url);
+      } catch {
+        setStatus(elements.urlStatus, "https:// から始まるURLを入力してください。");
+        return;
+      }
+
+      if (editingId) {
+        const item = state.registry.find((entry) => entry.id === editingId);
+        if (item) {
+          item.name = name;
+          item.url = url;
+        }
+        delete elements.addUrlButton.dataset.editingId;
+        elements.addUrlButton.textContent = "登録";
+        setStatus(elements.urlStatus, `${name} を更新しました。`);
+      } else {
+        state.registry.push({ id: uid(), name, url });
+        setStatus(elements.urlStatus, `${name} を登録しました。`);
+      }
+
+      elements.urlName.value = "";
+      elements.urlValue.value = "";
+      persist();
+      renderAll();
+    });
+
+    elements.clearUrlButton.addEventListener("click", () => {
+      elements.urlName.value = "";
+      elements.urlValue.value = "";
+      delete elements.addUrlButton.dataset.editingId;
+      elements.addUrlButton.textContent = "登録";
+      elements.urlName.focus();
+    });
+
+    elements.addNoticeButton.addEventListener("click", () => {
+      const date = elements.noticeDate.value;
+      const text = elements.noticeText.value.trim();
+      const editingId = elements.addNoticeButton.dataset.editingId;
+
+      if (!date || !text) {
+        setStatus(elements.noticeStatus, "日付と内容を入力してください。");
+        return;
+      }
+
+      if (editingId) {
+        const item = state.notices.find((entry) => entry.id === editingId);
+        if (item) {
+          item.date = date;
+          item.text = text;
+        }
+        delete elements.addNoticeButton.dataset.editingId;
+        elements.addNoticeButton.textContent = "登録";
+        setStatus(elements.noticeStatus, "お知らせを更新しました。");
+      } else {
+        state.notices.push({ id: uid(), date, text });
+        setStatus(elements.noticeStatus, "お知らせを登録しました。");
+      }
+
+      elements.noticeDate.value = "";
+      elements.noticeText.value = "";
+      persist();
+      renderAll();
+    });
+
+    elements.clearNoticeButton.addEventListener("click", () => {
+      elements.noticeDate.value = "";
+      elements.noticeText.value = "";
+      delete elements.addNoticeButton.dataset.editingId;
+      elements.addNoticeButton.textContent = "登録";
+      elements.noticeDate.focus();
+    });
+
+    elements.addPatchButton.addEventListener("click", () => {
+      const date = elements.patchDate.value;
+      const title = elements.patchTitle.value.trim();
+      const detail = elements.patchDetail.value.trim();
+      const editingId = elements.addPatchButton.dataset.editingId;
+
+      if (!date || !title || !detail) {
+        setStatus(elements.patchStatus, "日付、タイトル、内容を入力してください。");
+        return;
+      }
+
+      if (editingId) {
+        const item = state.patchNotes.find((entry) => entry.id === editingId);
+        if (item) {
+          item.date = date;
+          item.title = title;
+          item.detail = detail;
+        }
+        delete elements.addPatchButton.dataset.editingId;
+        elements.addPatchButton.textContent = "登録";
+        setStatus(elements.patchStatus, "パッチノートを更新しました。");
+      } else {
+        state.patchNotes.push({ id: uid(), date, title, detail });
+        setStatus(elements.patchStatus, "パッチノートを登録しました。");
+      }
+
+      elements.patchDate.value = "";
+      elements.patchTitle.value = "";
+      elements.patchDetail.value = "";
+      persist();
+      renderAll();
+    });
+
+    elements.clearPatchButton.addEventListener("click", () => {
+      elements.patchDate.value = "";
+      elements.patchTitle.value = "";
+      elements.patchDetail.value = "";
+      delete elements.addPatchButton.dataset.editingId;
+      elements.addPatchButton.textContent = "登録";
+      elements.patchDate.focus();
+    });
+
+    elements.overwriteButton.addEventListener("click", async () => {
+      if (!state.document) {
+        setStatus(elements.assignStatus, "先にHTMLを読み込んでください。");
+        return;
+      }
+      if (!state.fileHandle) {
+        setStatus(elements.assignStatus, "直接上書きするには「編集するHTMLを開く」からHTMLを開いてください。");
+        return;
+      }
+      try {
+        await writeFileHandle(state.fileHandle, getOutputHtml());
+        setStatus(elements.assignStatus, `${state.sourceName || "HTML"} を上書き保存しました。`);
+      } catch (error) {
+        setStatus(elements.assignStatus, `上書き保存に失敗しました: ${error.message || error}`);
+      }
+    });
+
+    elements.saveAsButton.addEventListener("click", async () => {
+      if (!state.document) {
+        setStatus(elements.assignStatus, "先にHTMLを読み込んでください。");
+        return;
+      }
+      if (!setWritableStatus()) return;
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: state.sourceName || "index.html",
+          types: [{
+            description: "HTMLファイル",
+            accept: { "text/html": [".html", ".htm"] }
+          }]
+        });
+        await writeFileHandle(handle, getOutputHtml());
+        setStatus(elements.assignStatus, `${handle.name || "HTML"} を保存しました。`);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setStatus(elements.assignStatus, `保存に失敗しました: ${error.message || error}`);
+        }
+      }
+    });
+
+    elements.downloadButton.addEventListener("click", () => {
+      if (!state.document) {
+        setStatus(elements.assignStatus, "先にHTMLを読み込んでください。");
+        return;
+      }
+      downloadFile("index.html", getOutputHtml(), "text/html;charset=utf-8");
+    });
+
+    elements.saveSettingsButton.addEventListener("click", () => {
+      const data = {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        registry: state.registry,
+        assignments: state.assignments,
+        categoryLabels: state.categoryLabels,
+        categoryNotes: state.categoryNotes,
+        notices: state.notices,
+        patchNotes: state.patchNotes,
+        categoryFolderMode: state.categoryFolderMode,
+        categoryFolders: state.categoryFolders,
+        itemFolders: state.itemFolders
+      };
+      downloadFile("pier-portal-link-settings.json", JSON.stringify(data, null, 2), "application/json;charset=utf-8");
+    });
+
+    elements.loadSettingsButton.addEventListener("click", () => {
+      elements.settingsFile.click();
+    });
+
+    elements.settingsFile.addEventListener("change", async () => {
+      const file = elements.settingsFile.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await readFile(file));
+        state.registry = Array.isArray(data.registry) ? data.registry : [];
+        state.assignments = normalizeAssignments(data.assignments);
+        state.categoryLabels = data.categoryLabels && typeof data.categoryLabels === "object" ? data.categoryLabels : {};
+        state.categoryNotes = data.categoryNotes && typeof data.categoryNotes === "object" ? data.categoryNotes : {};
+        state.notices = Array.isArray(data.notices) ? data.notices : [];
+        state.patchNotes = Array.isArray(data.patchNotes) ? data.patchNotes : [];
+        state.categoryFolderMode = data.categoryFolderMode && typeof data.categoryFolderMode === "object" ? data.categoryFolderMode : {};
+        state.categoryFolders = data.categoryFolders && typeof data.categoryFolders === "object" ? data.categoryFolders : {};
+        state.itemFolders = data.itemFolders && typeof data.itemFolders === "object" ? data.itemFolders : {};
+        persist();
+        renderAll();
+        setStatus(elements.assignStatus, "設定を読み込みました。");
+      } catch (error) {
+        setStatus(elements.assignStatus, `設定読込に失敗しました: ${error.message || error}`);
+      } finally {
+        elements.settingsFile.value = "";
+      }
+    });
+
+    restore();
+    renderAll();
+  </script>
+</body>
+</html>
