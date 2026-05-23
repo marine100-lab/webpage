@@ -772,31 +772,46 @@
       </style><style data-candidate-viewport-fix="true">
         @media (min-width: 761px) {
           .hero {
-            min-height: 430px;
+            min-height: 410px;
           }
 
           .hero + .panel[data-pier-portal-moved="true"] {
-            position: relative;
-            z-index: 2;
-            width: min(650px, calc(100% - 88px));
-            margin: -122px 0 0 44px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            align-items: stretch;
+            margin: 16px 0 0;
             border-radius: 18px;
-            box-shadow: 0 18px 42px rgba(15, 62, 136, .16);
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(15, 62, 136, .08);
           }
 
           .hero + .panel[data-pier-portal-moved="true"] .panel-header {
-            padding: 12px 18px;
+            border-bottom: 0;
+            border-right: 1px solid #ebf1f7;
+            padding: 18px 22px;
             font-size: 16px;
           }
 
           .hero + .panel[data-pier-portal-moved="true"] .panel-body {
-            padding: 12px 18px 16px;
+            padding: 14px 18px;
           }
 
           .hero + .panel[data-pier-portal-moved="true"] .candidate-box {
-            min-height: 78px;
-            max-height: min(240px, 28vh);
+            min-height: 64px;
+            max-height: min(210px, 26vh);
             overflow: auto;
+            border-radius: 14px;
+          }
+
+          .hero + .panel[data-pier-portal-moved="true"] .candidate-box:not(.has-results) {
+            border-style: solid;
+            min-height: 58px;
+            padding: 14px 18px;
+            font-size: 15px;
+          }
+
+          .hero + .panel[data-pier-portal-moved="true"] .candidate-box:not(.has-results) > div > div {
+            display: none;
           }
         }
 
