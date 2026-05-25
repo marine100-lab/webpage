@@ -844,22 +844,22 @@
         
 
         <div class="search-card">
-          <label class="search-label" for="siteName">担当現場名を入力してください</label>
+          <label class="search-label" for="siteName">バース名または点検表名を入力してください</label>
           <div class="search-row">
-            <input id="siteName" type="text" placeholder="例）○○桟橋、△△基地、□□岸壁 など" autocomplete="off">
+            <input id="siteName" type="text" placeholder="例）〇〇バース、点検表名" autocomplete="off">
             <button type="button">⌕</button>
           </div>
           
         </div>
       </div>
     </section><div class="panel" data-pier-portal-moved="true">
-        <div class="panel-header">🔎 現場名から探す（候補一覧）</div>
+        <div class="panel-header">🔎 バース名・点検表名から探す（候補一覧）</div>
         <div class="panel-body">
           
           <div class="candidate-box">
             <div>
               <div style="font-size:44px;margin-bottom:10px;">📋</div>
-              現場名を入力して検索してください
+              バース名または点検表名を入力して検索してください
             </div>
           </div>
         </div>
@@ -1098,7 +1098,7 @@
 
           let lastOpened = "";
 
-          const normalize = (value) => String(value || "").trim().toLowerCase();
+          const normalize = (value) => String(value || "").normalize("NFKC").trim().toLowerCase();
           const openSheet = (item) => {
             if (!item || !item.url || lastOpened === item.url) return;
             lastOpened = item.url;
@@ -1114,7 +1114,7 @@
           };
 
           const getLeadingNumber = (value) => {
-            const match = String(value || "").trim().match(/^\d+/);
+            const match = normalize(value).match(/^\d+/);
             return match ? match[0] : "";
           };
 
@@ -1141,7 +1141,7 @@
 
             if (!key) {
               resultBox.classList.remove("has-results");
-              resultBox.innerHTML = '<div><div style="font-size:44px;margin-bottom:10px;">🔎</div>現場名を入力して検索してください</div>';
+              resultBox.innerHTML = '<div><div style="font-size:44px;margin-bottom:10px;">🔎</div>バース名または点検表名を入力して検索してください</div>';
               return;
             }
 
@@ -1312,7 +1312,7 @@
 
           const modal = document.createElement("div");
           modal.className = "pier-guide-modal";
-          modal.innerHTML = '<div class="pier-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="pierGuideTitle"><div class="pier-guide-head"><h2 id="pierGuideTitle">使い方ガイド</h2><button type="button" class="pier-guide-close" aria-label="close">x</button></div><div class="pier-guide-body"><ol><li>担当現場名を入力すると、該当する点検表が表示されます。</li><li>表示された点検表名をクリックすると、スプレッドシートが開きます。</li><li>カテゴリカードをクリックすると、カテゴリ内の点検表一覧を確認できます。</li></ol></div></div>';
+          modal.innerHTML = '<div class="pier-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="pierGuideTitle"><div class="pier-guide-head"><h2 id="pierGuideTitle">使い方ガイド</h2><button type="button" class="pier-guide-close" aria-label="close">x</button></div><div class="pier-guide-body"><ol><li>バース名または点検表名を入力すると、該当する点検表が表示されます。</li><li>表示された点検表名をクリックすると、スプレッドシートが開きます。</li><li>カテゴリカードをクリックすると、カテゴリ内の点検表一覧を確認できます。</li></ol></div></div>';
           document.body.appendChild(modal);
 
           const closeButton = modal.querySelector(".pier-guide-close");
